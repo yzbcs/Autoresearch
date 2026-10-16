@@ -270,7 +270,7 @@ class PipelineManager:
                 flow["search_run"] = existing["run_name"]
             else:
                 job = search.JOB_MANAGER.create(
-                    flow["direction"], flow["paper_count"], True, 900, pipeline_id=flow["id"]
+                    flow["direction"], flow["paper_count"], True, 900, pipeline_id=flow["id"], title=flow["title"]
                 )
                 flow["search_run"] = job.run_dir.name
             flow["retry"] = False

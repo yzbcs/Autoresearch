@@ -14,16 +14,20 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
-
+from urllib.parse import unquote, urlparse
 
 WEB_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = WEB_ROOT.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+if str(PROJECT_ROOT.parent) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT.parent))
 import direction_research
 import research_pipeline
+
+from workbench.task_naming import create_task_directory, name_pattern
+
 try:
     from .build_data import DEFAULT_MANIFEST, DEFAULT_RUN_DIR, build_dataset, write_dataset
 except ImportError:
@@ -32,7 +36,7 @@ except ImportError:
 
 RUNS_ROOT = PROJECT_ROOT / "research_runs"
 MAX_REQUEST_BYTES = 64 * 1024
-DIRECTION_RUN_RE = re.compile(r"direction-\d{8}-\d{6}-[a-f0-9]{6}")
+DIRECTION_RUN_RE = re.compile(r"(?:direction-\d{8}-\d{6}-[a-f0-9]{6}|" + name_pattern("search") + ")")
 READABLE_RUNS = {"medical-vlm-10"}
 HUMAN_REVIEW_VALUES = {"approved", "discarded"}
 
@@ -43,10 +47,9 @@ def utc_now() -> str:
 
 class ResearchJob:
     def __init__(self, direction: str, paper_count: int, evaluate: bool, timeout: int,
-                 run_dir: Path | None = None, pipeline_id: str | None = None):
+                 run_dir: Path | None = None, pipeline_id: str | None = None, title: str | None = None):
         self.id = uuid.uuid4().hex[:12]
-        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        self.run_dir = RUNS_ROOT / f"direction-{timestamp}-{self.id[:6]}"
+        self.run_dir = run_dir or create_task_directory(RUNS_ROOT, title or direction, "search")
         self.direction = direction
         self.paper_count = paper_count
         self.evaluate = evaluate
@@ -184,8 +187,8 @@ class JobManager:
         self.worker_slot = threading.Semaphore(1)
 
     def create(self, direction: str, paper_count: int, evaluate: bool, timeout: int,
-               pipeline_id: str | None = None) -> ResearchJob:
-        job = ResearchJob(direction, paper_count, evaluate, timeout, pipeline_id=pipeline_id)
+               pipeline_id: str | None = None, title: str | None = None) -> ResearchJob:
+        job = ResearchJob(direction, paper_count, evaluate, timeout, pipeline_id=pipeline_id, title=title)
         with self.lock:
             self.jobs[job.id] = job
         thread = threading.Thread(target=self._run, args=(job,), daemon=True, name=f"w2c-{job.id}")
@@ -429,7 +432,7 @@ def list_run_summaries() -> list[dict[str, Any]]:
         if (RUNS_ROOT / run_name).is_dir()
         and dataset_path_for_run(RUNS_ROOT / run_name).is_file()
     )
-    run_names.update(path.name for path in RUNS_ROOT.glob("direction-*") if path.is_dir())
+    run_names.update(path.name for path in RUNS_ROOT.glob("*") if path.is_dir())
     summaries: list[dict[str, Any]] = []
     transient_statuses = {"queued", "researching", "generating", "evaluating", "cancelling"}
     for run_name in run_names:
@@ -492,7 +495,7 @@ class AppHandler(SimpleHTTPRequestHandler):
         self.send_json({"error": message}, status)
 
     def do_GET(self) -> None:
-        path = urlparse(self.path).path.rstrip("/")
+        path = unquote(urlparse(self.path).path).rstrip("/")
         if path == "/api/health":
             try:
                 cli = str(direction_research.generate_idea.resolve_codex_cli())
@@ -541,7 +544,7 @@ class AppHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_PUT(self) -> None:
-        path = urlparse(self.path).path.rstrip("/")
+        path = unquote(urlparse(self.path).path).rstrip("/")
         match = re.fullmatch(r"/api/runs/([^/]+)/ideas/([a-z0-9_]+)/human-review", path)
         if not match:
             self.send_api_error("Endpoint not found.", HTTPStatus.NOT_FOUND)
@@ -561,8 +564,8 @@ class AppHandler(SimpleHTTPRequestHandler):
             self.send_api_error(str(error))
 
     def do_POST(self) -> None:
-        path = urlparse(self.path).path.rstrip("/")
-        resume_match = re.fullmatch(r"/api/runs/(direction-[0-9-]+[a-f0-9]{6})/resume", path)
+        path = unquote(urlparse(self.path).path).rstrip("/")
+        resume_match = re.fullmatch(r"/api/runs/([^/]+)/resume", path)
         stop_match = re.fullmatch(r"/api/jobs/([a-f0-9]{12})/stop", path)
         if resume_match or stop_match:
             try:
@@ -606,7 +609,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             self.send_api_error(str(error))
 
     def do_DELETE(self) -> None:
-        path = urlparse(self.path).path.rstrip("/")
+        path = unquote(urlparse(self.path).path).rstrip("/")
         match = re.fullmatch(r"/api/runs/([^/]+)", path)
         if not match:
             self.send_api_error("Endpoint not found.", HTTPStatus.NOT_FOUND)

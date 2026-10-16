@@ -110,6 +110,24 @@ def test_task_directories_and_imports_preserve_project_instruction_source(tmp_pa
     assert len(set(runner.workspaces)) == 3
 
 
+@pytest.mark.parametrize("title", ["中文任务标题", "../路径/测试:实验", "长标题" * 120, " /.. "])
+def test_named_task_directories_are_safe_unique_and_reloadable(tmp_path, title):
+    manager = TaskManager(tmp_path / "index", DesignRunner())
+    first, second = [manager.create(title, "Motivation: test", str(tmp_path)) for _ in range(2)]
+    root = (tmp_path / "assets/output/auto_design").resolve()
+    assert first["run_dir"] != second["run_dir"]
+    for task in (first, second):
+        directory = Path(task["run_dir"])
+        assert directory.parent == root
+        assert len(directory.name.encode("utf-8")) < 255
+        assert (directory / "idea.md").read_text() == "Motivation: test"
+        assert task["title"] == title.strip()
+    if title == "中文任务标题":
+        assert Path(first["run_dir"]).name.startswith("中文任务标题-design-")
+    reloaded = TaskManager(tmp_path / "index", DesignRunner())
+    assert reloaded.get(first["id"])["run_dir"] == first["run_dir"]
+
+
 def test_model_success_without_artifacts_stops_pipeline(tmp_path):
     class EmptyRunner:
         def invoke(self, *args):

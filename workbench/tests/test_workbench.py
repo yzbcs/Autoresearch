@@ -27,7 +27,7 @@ from workbench.server import MODULES, Workbench, search, writing
 def request(app, path, value=None, method=None):
     data = json.dumps(value).encode("utf-8") if value is not None else None
     req = Request(
-        f"http://127.0.0.1:{app.server.server_port}{path}",
+        f"http://127.0.0.1:{app.server.server_port}" + quote(path, safe="/%?=&"),
         data=data,
         method=method,
         headers={"Content-Type": "application/json"},

@@ -10,6 +10,8 @@ import threading
 import uuid
 from pathlib import Path
 
+from workbench.task_naming import create_task_directory
+
 from .codex_runner import CodexRunner, ControllerInterrupted, utc_now
 from .effects import check_design
 from .prompting import build_prompt
@@ -256,8 +258,9 @@ class TaskManager:
         if scope not in {"full", "design_only"}:
             raise ValueError("未知执行范围。")
         task_id = "design-" + uuid.uuid4().hex[:12]
-        run_dir = working_dir.resolve() / "assets" / "output" / "auto_design" / task_id
-        run_dir.mkdir(parents=True)
+        run_dir = create_task_directory(
+            working_dir.resolve() / "assets/output/auto_design", title, "design"
+        )
         input_path = run_dir / "idea.md"
         input_path.write_text(idea, encoding="utf-8")
         initialize_run(input_path, run_dir)

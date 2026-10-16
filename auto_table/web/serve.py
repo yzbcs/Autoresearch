@@ -43,7 +43,7 @@ class AppHandler(SimpleHTTPRequestHandler):
         path = urlsplit(self.path).path.rstrip("/")
         if not path.startswith("/api/"):
             return super().do_HEAD() if self.command == "HEAD" else super().do_GET()
-        parts = path.split("/")
+        parts = [unquote(part) for part in path.split("/")]
         try:
             if path == "/api/health":
                 return self.send_json(
@@ -90,7 +90,7 @@ class AppHandler(SimpleHTTPRequestHandler):
                 p["artifacts"] = self.app.artifacts(parts[3])
                 return self.send_json(p)
             if len(parts) >= 7 and parts[1:3] == ["api", "projects"] and parts[4] == "files":
-                file = self.app.artifact(parts[3], parts[5], unquote("/".join(parts[6:])))
+                file = self.app.artifact(parts[3], parts[5], "/".join(parts[6:]))
                 self.send_response(200)
                 self.send_header(
                     "Content-Type", mimetypes.guess_type(file.name)[0] or "application/octet-stream"
@@ -116,7 +116,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             if not isinstance(payload, dict):
                 raise TypeError("请求必须为 JSON 对象。")
             path = urlsplit(self.path).path.rstrip("/")
-            parts = path.split("/")
+            parts = [unquote(part) for part in path.split("/")]
             if path == "/api/projects":
                 return self.send_json(self.app.create(payload), 201)
             if path == "/api/import-writing":

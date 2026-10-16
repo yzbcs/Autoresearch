@@ -1,5 +1,11 @@
 # AutoResearch 开发交接
 
+## 当前开发仓库
+
+自 2026-10-16 起，本项目在 [yzbcs/Autoresearch](https://github.com/yzbcs/Autoresearch) 的 `test-v1` 分支继续开发。本地 `origin` 指向该仓库，当前分支跟踪 `origin/test-v1`；原 `wanghao1118/LL-AutoResearch` 保留为 `upstream`，用于查阅上游历史。日常 `git pull`、`git push` 使用自己的仓库。
+
+迁移保留当前分支的提交历史、许可证、四模块工作台，以及本地尚未提交的任务目录命名修改和内测使用说明。本机 `assets/` 中的实验输入、输出、日志，`tmp/`、预览草稿及前端依赖和构建缓存留在本地，不作为源码上传。已有其他本地分支和关联工作树保留原状。
+
 当前分支为 `test-v1`，已将 Auto Search、Auto Design、Auto Writing、Auto Table 整合到 [同一个工作台](http://127.0.0.1:8760/)。完整说明见 [workbench/README.md](../workbench/README.md)。启动命令为 `.venv/bin/python3 -m workbench --port 8760`，首页可明确启动四模块自动流程，模块页仍支持独立操作。设计、恢复语义与接口见 [前端全流程说明](frontend_workflow.md)。
 
 此前的独立 Auto Design 已提交并推送到 GitHub：`49da8d80c738259bad1fb7b88668b945606878b7`，远端分支 [auto_design](https://github.com/wanghao1118/LL-AutoResearch/tree/auto_design)。该分支基于 `main` 的 `01615b8`；旧 `autodesign` 分支 `af51260` 是科学规则和运行工具的迁移来源。以下 Round 1、Round 2 记录其重构过程，Round 3 记录三模块整合。

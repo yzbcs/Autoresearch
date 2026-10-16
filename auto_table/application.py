@@ -9,12 +9,12 @@ import re
 import shutil
 import threading
 import traceback
-import uuid
 import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
 
 from auto_writing.web.serve import compile_latex
+from workbench.task_naming import create_task_directory, name_pattern
 
 from . import codex_runner
 from .engine.ingest import InputError, load_inputs
@@ -73,14 +73,14 @@ class Application:
         self.threads = {}
         self.runner = runner or codex_runner.invoke
         self.compiler = compiler or compile_latex
-        for path in self.root.glob("table-*/project.json"):
+        for path in self.root.glob("*/project.json"):
             project = read_json(path)
             if project["status"] == "running":
                 project.update(status="paused", message="服务已重启，当前进度已保留，请点击继续。")
                 write_json(path, project)
 
     def directory(self, project_id):
-        if not re.fullmatch(r"table-[a-f0-9]{12}", project_id):
+        if not re.fullmatch(r"(?:table-[a-f0-9]{12}|" + name_pattern("table") + ")", project_id):
             raise ValueError("任务编号无效。")
         return self.root / project_id
 
@@ -97,7 +97,7 @@ class Application:
     def list(self):
         with self.lock:
             return sorted(
-                [read_json(p) for p in self.root.glob("table-*/project.json")],
+                [read_json(p) for p in self.root.glob("*/project.json")],
                 key=lambda p: p["created_at"],
                 reverse=True,
             )
@@ -139,7 +139,7 @@ class Application:
         config = payload.get("config", {})
         if not isinstance(config, dict):
             raise TypeError("配置必须为 JSON 对象。")
-        project_id = "table-" + uuid.uuid4().hex[:12]
+        project_id = create_task_directory(self.root, title, "table").name
         input_dir = self.input_root / project_id
         input_dir.mkdir(parents=True)
         inputs = []

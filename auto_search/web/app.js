@@ -726,7 +726,7 @@ async function init() {
   wireEvents();
   try {
     const requestedRun = new URLSearchParams(location.search).get("run");
-    const runName = requestedRun && /^(medical-vlm-10|direction-\d{8}-\d{6}-[a-f0-9]{6})$/.test(requestedRun)
+    const runName = requestedRun && /^(medical-vlm-10|direction-\d{8}-\d{6}-[a-f0-9]{6}|[\p{L}\p{N}_-]{1,60}-search-\d{8}-\d{6}-\d{6}(?:-[a-f0-9]{8})?)$/u.test(requestedRun)
       ? requestedRun : "medical-vlm-10";
     const dataset = await loadRunDataset(runName);
     if (!dataset.ideas?.length) {

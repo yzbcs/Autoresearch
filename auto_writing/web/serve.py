@@ -10,6 +10,7 @@ import re
 import shutil
 import stat
 import subprocess
+import sys
 import threading
 import time
 import uuid
@@ -22,9 +23,12 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 from urllib.parse import unquote, urlparse
 
-
 WEB_ROOT = Path(__file__).resolve().parent
 AUTO_WRITING_ROOT = WEB_ROOT.parent
+if str(AUTO_WRITING_ROOT.parent) not in sys.path:
+    sys.path.insert(0, str(AUTO_WRITING_ROOT.parent))
+from workbench.task_naming import create_task_directory, name_pattern
+
 WRITING_RUNS_ROOT = AUTO_WRITING_ROOT / "writing_runs"
 PROMPT_TEMPLATES_PATH = WEB_ROOT / "prompt_templates.json"
 RESEARCH_PROMPT_TEMPLATES_PATH = WEB_ROOT / "research_prompt_templates.json"
@@ -45,7 +49,8 @@ MAX_TEMPLATE_FILES = 1000
 MAX_TEMPLATE_UNCOMPRESSED_BYTES = 100 * 1024 * 1024
 DEFAULT_WRITING_TIMEOUT_SECONDS = 15 * 60
 DEFAULT_RESEARCH_TIMEOUT_SECONDS = 20 * 60
-PROJECT_ID_RE = re.compile(r"writing-\d{8}-\d{6}-[a-f0-9]{6}")
+PROJECT_ID_PATTERN = r"(?:writing-\d{8}-\d{6}-[a-f0-9]{6}|" + name_pattern("writing") + ")"
+PROJECT_ID_RE = re.compile(PROJECT_ID_PATTERN)
 BASE_SECTION_ORDER = ("intro", "related_work", "method", "experiments", "conclusion")
 SECTION_ORDER = BASE_SECTION_ORDER + ("abstract",)
 SECTION_LABELS = {
@@ -527,9 +532,8 @@ def create_project(
     if len(support_files) > MAX_SUPPORT_FILES:
         raise ValueError(f"补充资料最多上传 {MAX_SUPPORT_FILES} 个文件。")
 
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    project_id = f"writing-{timestamp}-{uuid.uuid4().hex[:6]}"
-    run_dir = WRITING_RUNS_ROOT / project_id
+    run_dir = create_task_directory(WRITING_RUNS_ROOT, title, "writing")
+    project_id = run_dir.name
     input_dir = run_dir / "input"
     support_dir = input_dir / "supporting_materials"
     (run_dir / "manuscript").mkdir(parents=True, exist_ok=False)
@@ -992,7 +996,7 @@ def sync_existing_research_references(project: dict[str, Any]) -> bool:
 
 
 def migrate_existing_research_references() -> None:
-    for path in WRITING_RUNS_ROOT.glob("writing-*/project.json"):
+    for path in WRITING_RUNS_ROOT.glob("*/project.json"):
         try:
             project = load_project(path.parent.name)
             if sync_existing_research_references(project):
@@ -2525,7 +2529,7 @@ def project_view(project: dict[str, Any], include_content: bool = True) -> dict[
 def list_projects() -> list[dict[str, Any]]:
     WRITING_RUNS_ROOT.mkdir(parents=True, exist_ok=True)
     projects: list[dict[str, Any]] = []
-    for path in WRITING_RUNS_ROOT.glob("writing-*"):
+    for path in WRITING_RUNS_ROOT.glob("*"):
         if not path.is_dir() or not PROJECT_ID_RE.fullmatch(path.name):
             continue
         try:
@@ -2602,7 +2606,7 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self) -> None:
         path = unquote(urlparse(self.path).path).rstrip("/")
-        logs_match = re.fullmatch(r"/api/writings/(writing-\d{8}-\d{6}-[a-f0-9]{6})/logs", path)
+        logs_match = re.fullmatch(r"/api/writings/(" + PROJECT_ID_PATTERN + r")/logs", path)
         if logs_match:
             try:
                 directory = safe_project_dir(logs_match.group(1))
@@ -2635,7 +2639,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             self.send_json({"writings": list_projects()})
             return
         match = re.fullmatch(
-            r"/api/writings/(writing-\d{8}-\d{6}-[a-f0-9]{6})/publication/download/(latex|pdf)",
+            r"/api/writings/(" + PROJECT_ID_PATTERN + r")/publication/download/(latex|pdf)",
             path,
         )
         if match:
@@ -2655,7 +2659,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             except ValueError as error:
                 self.send_error_json(error, HTTPStatus.NOT_FOUND)
             return
-        match = re.fullmatch(r"/api/writings/(writing-\d{8}-\d{6}-[a-f0-9]{6})", path)
+        match = re.fullmatch(r"/api/writings/(" + PROJECT_ID_PATTERN + r")", path)
         if match:
             try:
                 self.send_json(project_view(load_project(match.group(1))))
@@ -2668,7 +2672,7 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path = unquote(urlparse(self.path).path).rstrip("/")
-        auto_match = re.fullmatch(r"/api/writings/(writing-\d{8}-\d{6}-[a-f0-9]{6})/(auto-start|auto-pause|recompile)", path)
+        auto_match = re.fullmatch(r"/api/writings/(" + PROJECT_ID_PATTERN + r")/(auto-start|auto-pause|recompile)", path)
         if auto_match:
             try:
                 project_id, action = auto_match.groups()
@@ -2703,7 +2707,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
 
         match = re.fullmatch(
-            r"/api/writings/(writing-\d{8}-\d{6}-[a-f0-9]{6})/sections/([a-z_]+)/generate",
+            r"/api/writings/(" + PROJECT_ID_PATTERN + r")/sections/([a-z_]+)/generate",
             path,
         )
         if match:
@@ -2724,7 +2728,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
 
         match = re.fullmatch(
-            r"/api/writings/(writing-\d{8}-\d{6}-[a-f0-9]{6})/publication/build",
+            r"/api/writings/(" + PROJECT_ID_PATTERN + r")/publication/build",
             path,
         )
         if match:
@@ -2746,7 +2750,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
 
         match = re.fullmatch(
-            r"/api/writings/(writing-\d{8}-\d{6}-[a-f0-9]{6})/actions/([a-z_]+)/run",
+            r"/api/writings/(" + PROJECT_ID_PATTERN + r")/actions/([a-z_]+)/run",
             path,
         )
         if match:
@@ -2777,7 +2781,7 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def do_PUT(self) -> None:
         path = unquote(urlparse(self.path).path).rstrip("/")
-        match = re.fullmatch(r"/api/writings/(writing-\d{8}-\d{6}-[a-f0-9]{6})", path)
+        match = re.fullmatch(r"/api/writings/(" + PROJECT_ID_PATTERN + r")", path)
         if not match:
             self.send_error_json("Endpoint not found.", HTTPStatus.NOT_FOUND)
             return
@@ -2799,7 +2803,7 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def do_DELETE(self) -> None:
         path = unquote(urlparse(self.path).path).rstrip("/")
-        match = re.fullmatch(r"/api/writings/(writing-\d{8}-\d{6}-[a-f0-9]{6})", path)
+        match = re.fullmatch(r"/api/writings/(" + PROJECT_ID_PATTERN + r")", path)
         if not match:
             self.send_error_json("Endpoint not found.", HTTPStatus.NOT_FOUND)
             return

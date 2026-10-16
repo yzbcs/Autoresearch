@@ -128,3 +128,7 @@ reference migration and citation coverage, safe LaTeX extraction, and publicatio
 网页新增“自动完成 / 继续全文与 PDF”，按原依赖自动推进文献调研、六章节、引用与排版。使用已上传模板，未上传使用通用 article 模板。失败时停止自动推进并保留章节，之后可在网页只重试当前步骤；PDF 失败可单独重新编译已有源码。可查看完整调用及编译日志。
 
 统一工作台支持接收已完成且通过原审计/证据检查的实验产物，并自动创建关联写作任务。说明见 [前端全流程设计](../docs/frontend_workflow.md)。
+
+## 新任务目录命名
+
+新建任务采用 `任务标题-writing-YYYYMMDD-HHMMSS-ffffff`（北京时间，含微秒）。保留中文，特殊字符清理为连字符，标题部分最多 60 字符；重名冲突追加短编号。历史任务目录保持原路径。统一规则见 [工作台说明](../workbench/README.md#任务目录命名)。

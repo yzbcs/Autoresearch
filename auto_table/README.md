@@ -65,3 +65,7 @@ node --check auto_table/web/app.js
 ```
 
 具体运行验收与本轮交付记录见仓库 `docs/README.md`。
+
+## 新任务目录命名
+
+新建任务采用 `任务标题-table-YYYYMMDD-HHMMSS-ffffff`（北京时间，含微秒）。保留中文，特殊字符清理为连字符，标题部分最多 60 字符；重名冲突追加短编号。历史任务目录保持原路径。统一规则见 [工作台说明](../workbench/README.md#任务目录命名)。

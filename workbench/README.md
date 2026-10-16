@@ -48,6 +48,14 @@ Auto Search 的 Weakness 直达 Idea 和批量生成命令仍保存在模块目�
 
 首页“新建全流程”支持 Search → Design → Writing 自动交接，也可从已有模块任务接续。自动选题仅采用独立评审为 `promising` 且未被人工废弃的首选 Idea；可改为手动选题。实验完成后检查磁盘 `COMPLETE`、审计 PASS 和原始证据，再复制写作资料并自动运行全部写作步骤。失败时停止自动推进，由网页继续当前步骤；方法审批仍需明确决定。详见 [全流程设计与恢复说明](../docs/frontend_workflow.md)。
 
+## 任务目录命名
+
+新建任务统一为 `<任务标题>-<模块>-<北京时间戳>`，模块分别为 `search`、`design`、`writing`、`table`。时间戳格式为 `YYYYMMDD-HHMMSS-ffffff`（微秒），例如 `图像分类-search-20260908-153000-123456`。如果名称仍冲突，追加短编号，原目录不会被覆盖。
+
+保留中文、字母、数字、下划线和连字符，其他字符替换为连字符；标题部分最多 60 字符。网页仍保留完整标题。单独 Search 使用研究方向，全流程 Search 使用全流程标题。创建后目录名固定，修改标题不会移动已有产物。历史及导入任务沿用原路径，列表、下载和恢复兼容旧编号。
+
+Auto Table 的输入、日志目录也使用相同任务名。内部关联以实际任务记录为准，不从目录名称推断标题或任务状态。
+
 ## 数据与运行结构
 
 ```text
@@ -57,9 +65,9 @@ assets/output/workbench/
   auto_writing/                写作项目与上传、生成文件
 ```
 
-Auto Design 的具体运行产物仍写入用户选定工作目录下的 `assets/output/auto_design/<task-id>/`；工作台索引记录其实际路径。现有独立模块的数据不自动复制到工作台；接续已有 Auto Design 实验使用页面里的导入功能。工程验收数据和日志写入 `assets/logs/workbench/`，不进入正常任务索引，也不提交到 Git。
+Auto Design 的具体运行产物仍写入用户选定工作目录下的 `assets/output/auto_design/<任务标题>-design-<时间戳>/`；工作台索引记录其实际路径。现有独立模块的数据不自动复制到工作台；接续已有 Auto Design 实验使用页面里的导入功能。工程验收数据和日志写入 `assets/logs/workbench/`，不进入正常任务索引，也不提交到 Git。
 
-三个模块均以独立任务目录作为 Codex 工作目录。Auto Search 使用 `auto_search/direction-<时间戳>-<ID>/`；Auto Writing 使用 `auto_writing/writing-<时间戳>-<ID>/`；Auto Design 使用任务索引中已登记的 `run_dir`。Auto Design 的 `workspace` 继续表示用户选择的项目根目录，用于定位机器指令和创建任务目录，不再作为 Codex 的执行目录。已有目录及任务编号保留，正式实验命令继续使用执行计划和运行器规定的工作目录。
+三个模块均以独立任务目录作为 Codex 工作目录。Auto Search 使用 `auto_search/<任务标题>-search-<时间戳>/`；Auto Writing 使用 `auto_writing/<任务标题>-writing-<时间戳>/`；Auto Design 使用任务索引中已登记的 `run_dir`。Auto Design 的 `workspace` 继续表示用户选择的项目根目录，用于定位机器指令和创建任务目录，不再作为 Codex 的执行目录。已有目录及任务编号保留，正式实验命令继续使用执行计划和运行器规定的工作目录。
 
 `python3 -m workbench` 启动独立网页入口及一个研究工作进程；入口在工作进程退出时仍保留首页、日志、启动与重启接口。研究工作进程内启动四个绑定到 `127.0.0.1` 临时端口的原模块 HTTP 服务，由入口按路径前缀转发请求。GET、HEAD、POST、PUT、DELETE、查询参数、上传请求体和二进制下载均由原模块处理；原 32 MB 请求上限保留。只在模块主页注入共享导航，生成的 HTML 报告维持原内容和相对资源路径。开发时可用 `python3 -m workbench.server` 直接运行工作进程，但此方式没有独立服务恢复入口。
 

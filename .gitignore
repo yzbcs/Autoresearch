@@ -27,3 +27,17 @@ assets/input/auto_table/
 assets/output/auto_table/
 assets/logs/auto_table/
 auto_writing/tmp/
+
+# Local research data, logs, and temporary previews.
+/assets/
+/tmp/
+/draft_*_folder/
+.DS_Store
+
+# Frontend dependencies and generated build state.
+node_modules/
+.next/
+.vinext/
+.wrangler/
+*.tsbuildinfo
+next-env.d.ts

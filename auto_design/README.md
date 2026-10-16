@@ -97,7 +97,7 @@ auto_design/
 任务索引默认保存到启动工作区的 `assets/output/auto_design/tasks.json`。每个新实验在所选项目内创建独立目录：
 
 ```text
-<workspace>/assets/output/auto_design/<task-id>/
+<workspace>/assets/output/auto_design/<任务标题>-design-<时间戳>/
   idea.md
   input_brief.md
   AUTODESIGN_STATE.md
@@ -127,6 +127,8 @@ auto_design/
 ```
 
 R0 文件仅在需要时生成。方法修改文件、决策历史与恢复记录按实际断点生成。单次 CLI 调用记录工作目录、完整命令、进程 ID、开始结束时间和退出状态。
+
+新建实验目录使用“任务标题-design-时间戳”，保留中文，空白和路径特殊字符替换为连字符，标题部分最多 60 字符；同名任务分别保存。内部任务编号保持稳定，已有及导入任务不改名，始终以索引中的 `run_dir` 为准。
 
 新建表单中的“实验项目根目录”决定任务目录的存放位置和机器指令来源。每个任务的 Codex 调用在自己的 `run_dir` 中执行，设计、执行编排、诊断与审计均使用该目录。导入任务使用已登记的原运行目录，不移动已有产物。提示词、Schema 与确定性工具通过绝对路径读取；实际实验命令的工作目录仍按已登记的执行计划和运行器约定处理。
 
