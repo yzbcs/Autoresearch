@@ -566,7 +566,7 @@
     );
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${data.flow.title.replace(/[\\/:*?"<>|]/g, "_")}-科研航线.svg`;
+    link.download = `${data.flow.title.replace(/[\\/:*?"<>|]/g, "_")}-Research-Journey.svg`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
