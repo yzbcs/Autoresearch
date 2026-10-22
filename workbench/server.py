@@ -20,6 +20,7 @@ from auto_table.application import Application as TableApplication
 from auto_table.web.serve import create_server as create_table_server
 from auto_writing.web import serve as writing
 
+from .deletion import delete as delete_task
 from .pipeline import PipelineManager
 from .journey import snapshot as journey_snapshot
 
@@ -35,7 +36,9 @@ def add_navigation(content: bytes, module: str) -> bytes:
         "</head>",
         '<link rel="stylesheet" href="/module-nav.css">'
         '<link rel="stylesheet" href="/layout.css">'
-        '<script src="/module-nav.js" defer></script></head>',
+        '<script src="/module-nav.js" defer></script>'
+        '<link rel="stylesheet" href="/list-actions.css">'
+        '<script src="/list-actions.js" defer></script></head>',
         1,
     )
     html = html.replace("<body>", f'<body class="workbench-module" data-module="{module}">', 1)
@@ -74,6 +77,12 @@ class WorkbenchHandler(SimpleHTTPRequestHandler):
             return
 
         local_path = url.path[len(module) + 1 :]
+        if self.command == "DELETE":
+            from urllib.parse import unquote
+            pieces = unquote(local_path).strip("/").split("/")
+            if len(pieces) == 3 and pieces[:2] in (["api", "runs"], ["api", "writings"], ["api", "tasks"], ["api", "projects"]):
+                self.workbench_api(f"/api/items/{module.removeprefix('auto-')}/{pieces[2]}")
+                return
         target = urlunsplit(("", "", local_path, url.query, ""))
         try:
             size = int(self.headers.get("Content-Length", "0"))
@@ -155,7 +164,10 @@ class WorkbenchHandler(SimpleHTTPRequestHandler):
                 if not isinstance(payload, dict):
                     raise ValueError("请求必须是 JSON 对象。")
             parts = path.split("/")
-            if path == "/api/pipelines" and self.command == "GET":
+            if len(parts) == 5 and parts[1:3] == ["api", "items"] and self.command == "DELETE":
+                from urllib.parse import unquote
+                result = delete_task(app, parts[3], unquote(parts[4]))
+            elif path == "/api/pipelines" and self.command == "GET":
                 result = {"pipelines": app.pipeline.list()}
             elif path == "/api/pipelines" and self.command == "POST":
                 result, status = app.pipeline.create(payload), 201

@@ -1155,3 +1155,6 @@ h1 {
     animation: none;
   }
 }
+
+/* Avoid continuous decorative repainting on completed branches. */
+.route-edge.main.done{animation:none;stroke-dasharray:none}

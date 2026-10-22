@@ -1,0 +1,42 @@
+.list-delete-row {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  margin-bottom: 3px;
+}
+.list-delete-row > :first-child {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  margin-bottom: 0;
+}
+.list-delete-row .list-delete-button {
+  flex: 0 0 auto;
+  align-self: center;
+  width: auto;
+  min-height: 30px;
+  margin: 0;
+  padding: 5px 7px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: #a34142;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.list-delete-row .list-delete-button:hover,
+.list-delete-row .list-delete-button:focus-visible {
+  background: #fce9ed;
+  border-color: #e8c4cc;
+}
+.list-delete-row .list-delete-button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.folder-node .list-delete-row .folder-row {
+  width: auto;
+}
