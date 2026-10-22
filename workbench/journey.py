@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import copy
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -34,8 +33,7 @@ def read_record(path: Path) -> dict:
 
 
 def snapshot(app, flow_id: str) -> dict:
-    with app.pipeline.lock:
-        flow = copy.deepcopy(app.pipeline.get(flow_id))
+    flow = app.pipeline.get_view(flow_id)
     stage = flow["stage"]
     active_index = STAGES.index(stage)
     nodes, edges, warnings, module_events = [], [], [], []

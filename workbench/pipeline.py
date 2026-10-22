@@ -32,15 +32,20 @@ class PipelineManager:
         self.figure = figure
         self.root.mkdir(parents=True, exist_ok=True)
         self.lock = threading.RLock()
+        self.view_lock = threading.RLock()
         self.stop_event = threading.Event()
         self.thread: threading.Thread | None = None
         self.flows = {p.stem: json.loads(p.read_text()) for p in root.glob("flow-*.json")}
+        self.views = copy.deepcopy(self.flows)
         for flow in self.flows.values():
             if flow["status"] in {"running", "waiting_review"}:
                 self.update(flow, "paused", "服务重启后已暂停，点击继续会核对原任务并恢复。")
 
     def save(self, flow: dict) -> None:
         write_json(self.root / f"{flow['id']}.json", flow)
+        published = copy.deepcopy(flow)
+        with self.view_lock:
+            self.views[flow["id"]] = published
 
     def update(self, flow: dict, status: str, message: str) -> None:
         if flow.get("status") != status or flow.get("message") != message:
@@ -50,11 +55,35 @@ class PipelineManager:
             )
             self.save(flow)
 
-    def list(self) -> list[dict]:
-        with self.lock:
-            return copy.deepcopy(
-                sorted(self.flows.values(), key=lambda f: f["created_at"], reverse=True)
-            )
+    @staticmethod
+    def compact(flow):
+        return {**{k: v for k, v in flow.items() if k != "events"}, "event_count": len(flow.get("events", []))}
+
+    def list(self, summary=False) -> list[dict]:
+        # Read the last persisted snapshot without waiting for orchestration or disk I/O.
+        with self.view_lock:
+            values = sorted(self.views.values(), key=lambda f: f["created_at"], reverse=True)
+            return copy.deepcopy([self.compact(f) for f in values] if summary else values)
+
+    def get_view(self, flow_id, summary=False):
+        with self.view_lock:
+            if flow_id not in self.views:
+                raise ValueError("全流程任务不存在。")
+            flow = self.views[flow_id]
+            return copy.deepcopy(self.compact(flow) if summary else flow)
+
+    def events(self, flow_id, before=None, limit=200, all_events=False):
+        with self.view_lock:
+            if flow_id not in self.views:
+                raise ValueError("全流程任务不存在。")
+            events = self.views[flow_id].get("events", [])
+            end = len(events) if before is None else min(len(events), max(0, before))
+            start = 0 if all_events else max(0, end - limit)
+            return {"events": copy.deepcopy(events[start:end]), "total": len(events), "before": start if start else None}
+
+    def forget_view(self, flow_id):
+        with self.view_lock:
+            self.views.pop(flow_id, None)
 
     def get(self, flow_id: str) -> dict:
         if flow_id not in self.flows:

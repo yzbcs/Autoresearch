@@ -342,7 +342,7 @@
   async function refresh() {
     if (!live || document.hidden) return;
     try {
-      const listing = await api("/api/pipelines");
+      const listing = await api("/api/pipelines?summary=1");
       flows = listing.pipelines;
       $("#connection").textContent = "研究服务已连接";
       $("#connection-dot").className = "connected";

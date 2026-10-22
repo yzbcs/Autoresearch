@@ -96,6 +96,7 @@ def test_pipeline_deletion_preserves_shared_tasks_and_deletes_exclusive_files(ap
     assert not Path(exclusive["run_dir"]).exists()
     assert not (app.pipeline.root / (flow["id"] + ".json")).exists()
     assert app.pipeline.get(other["id"])
+    assert all(f["id"] != flow["id"] for f in app.pipeline.list(summary=True))
 
 
 def test_preflight_failure_keeps_every_task_and_flow(app):
