@@ -9,7 +9,7 @@ import threading
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import parse_qs, urlsplit, urlunsplit
 
 from auto_design.orchestration import TaskManager
 from auto_design.web.serve import create_server as create_design_server
@@ -164,17 +164,21 @@ class WorkbenchHandler(SimpleHTTPRequestHandler):
                 if not isinstance(payload, dict):
                     raise ValueError("请求必须是 JSON 对象。")
             parts = path.split("/")
+            query = parse_qs(urlsplit(self.path).query)
+            summary = query.get("summary") == ["1"]
             if len(parts) == 5 and parts[1:3] == ["api", "items"] and self.command == "DELETE":
                 from urllib.parse import unquote
                 result = delete_task(app, parts[3], unquote(parts[4]))
             elif path == "/api/pipelines" and self.command == "GET":
-                result = {"pipelines": app.pipeline.list()}
+                result = {"pipelines": app.pipeline.list(summary=summary)}
             elif path == "/api/pipelines" and self.command == "POST":
                 result, status = app.pipeline.create(payload), 201
             elif len(parts) == 4 and parts[1:3] == ["api", "pipelines"] and self.command == "GET":
-                with app.pipeline.lock:
-                    flow = app.pipeline.get(parts[3])
-                    result = {**flow, "candidates": app.pipeline.candidates(flow)}
+                flow = app.pipeline.get_view(parts[3], summary=summary)
+                result = {**flow, "candidates": app.pipeline.candidates(flow) if flow["status"] == "waiting_selection" else []}
+            elif len(parts) == 5 and parts[1:3] == ["api", "pipelines"] and parts[4] == "events" and self.command == "GET":
+                before = int(query["before"][0]) if "before" in query else None
+                result = app.pipeline.events(parts[3], before=before, all_events=query.get("all") == ["1"])
             elif len(parts) == 5 and parts[1:3] == ["api", "pipelines"] and parts[4] == "journey" and self.command == "GET":
                 result = journey_snapshot(app, parts[3])
             elif len(parts) == 5 and parts[1:3] == ["api", "pipelines"] and self.command == "POST":

@@ -133,6 +133,8 @@ def delete(app, module, identity):
                 temporary.rename(path)
             app.design._save()
             raise
+        if module == "pipeline":
+            app.pipeline.forget_view(identity)
         for kind, task_id in items:
             if kind == "search":
                 for job_id, job in list(search.JOB_MANAGER.jobs.items()):
