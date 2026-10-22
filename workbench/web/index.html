@@ -7,11 +7,13 @@
   <title>The ThAInker · AutoResearch</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="shell.css">
   <link rel="stylesheet" href="module-nav.css">
+  <link rel="stylesheet" href="layout.css">
   <script src="app.js" defer></script>
   <script src="pipelines.js" defer></script>
 </head>
-<body>
+<body class="workbench-shell">
   <svg class="icon-sprite" aria-hidden="true">
     <symbol id="search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 5 5"/></symbol>
     <symbol id="experiment" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-6 10a1.3 1.3 0 0 0 1.1 2h13.8a1.3 1.3 0 0 0 1.1-2L14 9V3M7 15h10"/></symbol>
@@ -25,6 +27,7 @@
     </a>
     <nav class="module-nav" aria-label="研究模块">
       <a href="/" aria-current="page">工作台</a>
+      <a href="/journey.html">科研航线</a>
       <a href="/auto-search/">Auto Search</a>
       <a href="/auto-design/">Auto Design</a>
       <a href="/auto-writing/">Auto Writing</a>
@@ -35,7 +38,7 @@
   <main>
     <section class="workspace-heading">
       <h1>面向科学发现的智能研究平台</h1>
-      <p>从一个研究方向走到实验与论文。每一步保留进度，遇到阻塞可在这里处理并继续。</p>
+      <p>从一个研究方向走到实验与论文。每一步保留进度，遇到阻塞可在这里处理并继续。 <a href="/journey.html" style="color:var(--teal)">打开科研航线图 ↗</a></p>
     </section>
     <section class="pipeline-console" aria-label="全流程任务">
       <div class="console-title"><div><span class="eyebrow">RESEARCH WORKFLOW</span><h2>全流程工作台</h2></div><button id="toggle-create" type="button">新建全流程</button></div>

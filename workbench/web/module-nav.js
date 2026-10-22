@@ -14,4 +14,8 @@
     nav.append(link);
   }
   document.querySelector(".topbar").append(nav);
+  const journey = document.createElement("a");
+  journey.href = "/journey.html";
+  journey.textContent = "科研航线";
+  nav.insertBefore(journey, nav.children[1]);
 })();

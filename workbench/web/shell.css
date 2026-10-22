@@ -1,0 +1,416 @@
+/* Shared workbench header, matching the existing research module shell. */
+.workbench-shell {
+  font-family: Inter, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+  --topbar: 70px;
+}
+.workbench-shell .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  height: var(--topbar);
+  min-height: var(--topbar);
+  padding: 0 28px 0 22px;
+  background: rgba(255, 255, 255, 0.97);
+  border-bottom: 1px solid var(--line);
+}
+.workbench-shell .brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  flex-shrink: 0;
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.workbench-shell .brand-logo-frame {
+  position: relative;
+  display: block;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  flex: 0 0 auto;
+  border-radius: 6px;
+  background: white;
+}
+.workbench-shell .brand-logo-frame img {
+  position: absolute;
+  width: 128px;
+  max-width: none;
+  left: -6px;
+  top: -24px;
+}
+.workbench-shell .brand > span:last-child {
+  display: grid;
+  min-width: 0;
+}
+.workbench-shell .brand strong {
+  font-size: 15px;
+  line-height: 1.25;
+}
+.workbench-shell .brand small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.workbench-shell .module-nav {
+  min-width: 0;
+  overflow-x: auto;
+  flex-shrink: 1;
+}
+.sidebar-toggle {
+  display: none;
+}
+.journey-page {
+  --sidebar: 322px;
+}
+.journey-page .sidebar {
+  position: fixed;
+  top: var(--topbar);
+  bottom: 0;
+  width: var(--sidebar);
+  height: calc(100dvh - var(--topbar));
+  padding: 22px 12px;
+  background: #eef1f2;
+  z-index: 25;
+}
+.journey-page main {
+  margin-left: var(--sidebar);
+  padding: 28px 28px 20px;
+}
+.journey-page .sidebar input {
+  border-color: #c7d0d3;
+  background: white;
+}
+.journey-page .new-research {
+  background: white;
+  border-color: #c7d0d3;
+  border-radius: 5px;
+  color: var(--ink);
+  min-height: 38px;
+}
+.journey-page .task-button.active {
+  background: #e3f3ef;
+  border-left-color: #087d70;
+}
+.journey-page .page-heading h1 {
+  font-size: 26px;
+  letter-spacing: 0;
+}
+.sidebar-scrim {
+  position: fixed;
+  z-index: 24;
+  inset: var(--topbar) 0 0;
+  border: 0;
+  border-radius: 0;
+  background: #121d2152;
+}
+@media (max-width: 1200px) {
+  .journey-page {
+    --sidebar: 285px;
+  }
+  .journey-page main {
+    padding: 24px 18px;
+  }
+  .workbench-shell .topbar {
+    gap: 14px;
+    padding-right: 18px;
+  }
+}
+@media (min-width: 761px) and (max-width: 850px) {
+  .journey-page .sidebar {
+    display: flex;
+    border-right: 1px solid var(--line);
+  }
+  .journey-page #flow-list {
+    display: block;
+    max-height: none;
+  }
+  .journey-page .sidebar-bottom {
+    display: block;
+  }
+  .journey-page .task-button {
+    max-width: none;
+  }
+  .journey-page .new-research {
+    align-self: stretch;
+  }
+}
+@media (max-width: 760px) {
+  .workbench-shell {
+    --topbar: 108px;
+  }
+  .workbench-shell .topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 56px 42px;
+    gap: 0 12px;
+    height: var(--topbar);
+    padding: 4px 14px 6px;
+  }
+  .workbench-shell .brand {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: 0;
+  }
+  .workbench-shell .brand-logo-frame {
+    width: 38px;
+    height: 38px;
+  }
+  .workbench-shell .brand-logo-frame img {
+    width: 111px;
+    left: -5px;
+    top: -21px;
+  }
+  .workbench-shell .topbar .module-nav {
+    grid-column: 1/-1;
+    grid-row: 2;
+    width: 100%;
+    height: 42px;
+    align-items: center;
+    gap: 2px;
+    justify-content: flex-start;
+  }
+  .workbench-shell .module-nav a {
+    flex: 0 0 auto;
+  }
+  .sidebar-toggle {
+    display: block;
+    grid-column: 2;
+    grid-row: 1;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-color: #c7d0d3;
+    background: white;
+  }
+  .journey-page .sidebar {
+    width: min(86vw, 322px);
+    transform: translateX(-102%);
+    transition: transform 0.18s ease;
+    box-shadow: 12px 0 32px #14212629;
+    gap: 16px;
+  }
+  .journey-page .sidebar.open {
+    transform: translateX(0);
+  }
+  .journey-page #flow-list {
+    display: block;
+    max-height: none;
+    flex: 1;
+  }
+  .journey-page .task-button {
+    max-width: none;
+  }
+  .journey-page .sidebar-bottom {
+    display: block;
+  }
+  .journey-page .new-research {
+    align-self: stretch;
+  }
+  .journey-page main {
+    margin-left: 0;
+    padding: 24px 16px;
+  }
+  .journey-page .page-heading h1 {
+    font-size: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .journey-page .sidebar {
+    transition: none;
+  }
+}
+/* Keep the journey workspace dense while sharing the module shell. */
+.journey-page {
+  --sidebar: 246px;
+}
+.journey-page main {
+  padding: 20px 20px 14px;
+}
+.journey-page .sidebar {
+  padding: 16px 12px;
+  gap: 12px;
+}
+.journey-page .page-heading {
+  margin-bottom: 15px;
+  gap: 12px;
+}
+.journey-page .page-heading h1 {
+  font-size: 24px;
+}
+.journey-page .page-heading p {
+  margin-top: 6px;
+  font-size: 12px;
+}
+.journey-page .metrics {
+  padding: 12px 0;
+  margin-bottom: 12px;
+}
+.journey-page .metric {
+  padding: 0 14px;
+  gap: 8px;
+}
+.journey-page .metric-icon {
+  font-size: 20px;
+}
+.journey-page .metric strong {
+  font-size: 18px;
+}
+.journey-page .workspace-grid {
+  grid-template-columns: minmax(0, 1fr) 248px;
+  gap: 12px;
+}
+.journey-page .inspector {
+  min-height: 0;
+  padding: 14px;
+}
+.journey-page .inspector-heading {
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+.journey-page #node-detail h3 {
+  font-size: 18px;
+  margin: 10px 0 6px;
+}
+.journey-page #node-detail h4 {
+  margin: 15px 0 8px;
+}
+.journey-page .detail-actions,
+.journey-page .next-stop {
+  margin-top: 14px;
+}
+.journey-page .artifact {
+  padding: 8px;
+}
+.journey-page .map-heading {
+  padding: 12px 14px 9px;
+}
+.journey-page .canvas-scroll {
+  height: clamp(260px, 42vh, 380px);
+  min-height: 0;
+}
+.journey-page .map-panel:fullscreen .canvas-scroll {
+  height: auto;
+  flex: 1;
+}
+.journey-page .timeline-panel {
+  margin-top: 10px;
+  padding: 12px 14px 10px;
+}
+.journey-page .timeline {
+  padding: 18px 5px 5px;
+  min-height: 75px;
+}
+.journey-page .timeline-note {
+  margin-top: 6px;
+}
+.journey-page .sidebar-bottom {
+  padding-top: 12px;
+}
+.journey-page .map-footer {
+  padding: 9px 12px;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.journey-page .canvas-hint {
+  font-size: 9px;
+}
+.language-picker {
+  width: 78px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: white;
+  color: var(--ink);
+  font:
+    11px Inter,
+    "Segoe UI",
+    "Microsoft YaHei",
+    Arial,
+    sans-serif;
+  flex-shrink: 0;
+}
+@media (min-width: 1500px) {
+  .journey-page .workspace-grid {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+}
+@media (max-width: 1100px) {
+  .journey-page {
+    --sidebar: 232px;
+  }
+  .journey-page main {
+    padding: 18px 14px;
+  }
+  .journey-page .workspace-grid {
+    grid-template-columns: minmax(0, 1fr) 228px;
+  }
+  .journey-page .metric strong small {
+    font-size: 10px;
+  }
+  .workbench-shell .module-nav a {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+@media (max-width: 900px) {
+  .journey-page .workspace-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .journey-page .inspector {
+    display: grid;
+    grid-template-columns: 105px minmax(0, 1fr);
+    gap: 14px;
+  }
+  .journey-page .inspector-heading {
+    border-bottom: 0;
+  }
+  .journey-page .inspector-heading span {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .journey-page .topbar {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+  .journey-page .language-picker {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .journey-page .sidebar-toggle {
+    grid-column: 3;
+  }
+  .journey-page .sidebar {
+    width: min(86vw, 322px);
+  }
+  .journey-page main {
+    margin-left: 0;
+    padding: 18px 14px;
+  }
+  .journey-page .inspector {
+    display: block;
+  }
+  .journey-page .canvas-scroll {
+    height: 280px;
+  }
+  .journey-page .page-heading {
+    gap: 10px;
+  }
+  .journey-page .metrics {
+    padding: 10px 0;
+  }
+  .journey-page .tag {
+    display: none;
+  }
+  .journey-page .overview {
+    width: 105px;
+  }
+  .journey-page .canvas-hint {
+    max-width: calc(100% - 20px);
+    line-height: 1.5;
+  }
+}

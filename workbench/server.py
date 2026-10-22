@@ -21,6 +21,7 @@ from auto_table.web.serve import create_server as create_table_server
 from auto_writing.web import serve as writing
 
 from .pipeline import PipelineManager
+from .journey import snapshot as journey_snapshot
 
 WEB_ROOT = Path(__file__).resolve().parent / "web"
 MODULES = ("auto-search", "auto-design", "auto-writing", "auto-table", "auto-figure")
@@ -33,6 +34,7 @@ def add_navigation(content: bytes, module: str) -> bytes:
     html = html.replace(
         "</head>",
         '<link rel="stylesheet" href="/module-nav.css">'
+        '<link rel="stylesheet" href="/layout.css">'
         '<script src="/module-nav.js" defer></script></head>',
         1,
     )
@@ -161,6 +163,8 @@ class WorkbenchHandler(SimpleHTTPRequestHandler):
                 with app.pipeline.lock:
                     flow = app.pipeline.get(parts[3])
                     result = {**flow, "candidates": app.pipeline.candidates(flow)}
+            elif len(parts) == 5 and parts[1:3] == ["api", "pipelines"] and parts[4] == "journey" and self.command == "GET":
+                result = journey_snapshot(app, parts[3])
             elif len(parts) == 5 and parts[1:3] == ["api", "pipelines"] and self.command == "POST":
                 result = app.pipeline.action(parts[3], parts[4], payload)
             elif path == "/api/runtime" and self.command == "GET":

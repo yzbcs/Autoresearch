@@ -6,7 +6,7 @@
   const $ = (s) => document.querySelector(s);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   const labels = { running: "运行中", blocked: "需要处理", paused: "已暂停", waiting_selection: "等待选题", waiting_review: "等待审批", completed: "已完成" };
-  let flows = [], selected = localStorage.getItem("workbench-flow"), detailKey = "", connected = false;
+  let flows = [], selected = new URLSearchParams(location.search).get("flow") || localStorage.getItem("workbench-flow"), detailKey = "", connected = false;
   let connectionNotice = false, creating = false;
   let sources = { search: [], design: [], writing: [], table: [] };
   async function api(path, payload) {
@@ -136,5 +136,9 @@
     try { await api("/api/service/restart", id === "save-service" ? { settings: { CODEX_CLI: $("#codex-path").value, LATEX_COMPILER: $("#latex-path").value } } : {}); notice("已请求重启。重新连接后，点击任务的继续按钮恢复。"); }
     catch (e) { notice(e.message); event.target.disabled = false; }
   });
+  if (new URLSearchParams(location.search).get("create") === "1") {
+    $("#pipeline-form").hidden = false;
+    loadSources().catch(e => notice(e.message));
+  }
   refresh(); serviceState();
 })();

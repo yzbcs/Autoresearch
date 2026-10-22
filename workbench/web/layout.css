@@ -1,0 +1,91 @@
+/* Spacing-only refinements. Keep existing controls, visual styles and DOM order. */
+.workbench-shell:not(.journey-page) main {
+  padding-top: 34px;
+  padding-bottom: 28px;
+}
+.workbench-shell:not(.journey-page) .workspace-heading {
+  margin-bottom: 24px;
+}
+.workbench-shell:not(.journey-page) .pipeline-console {
+  padding: 20px;
+  margin-bottom: 22px;
+}
+.workbench-shell:not(.journey-page) .module-grid {
+  gap: 16px;
+}
+.workbench-shell:not(.journey-page) .module-card {
+  padding: 20px 22px 0;
+}
+.workbench-shell:not(.journey-page) .card-top {
+  margin-bottom: 18px;
+}
+.workbench-shell:not(.journey-page) .module-card ul {
+  margin-top: 18px;
+  margin-bottom: 22px;
+  gap: 8px;
+}
+.workbench-module .workspace {
+  padding-left: 30px;
+  padding-right: 30px;
+  padding-bottom: 34px;
+}
+.workbench-module .task-heading {
+  gap: 22px;
+  padding-top: 26px;
+  padding-bottom: 20px;
+}
+.workbench-module .workspace-empty {
+  min-height: min(480px, calc(100dvh - var(--topbar)));
+  padding: 40px 0;
+}
+.workbench-module .summary-card {
+  margin-bottom: 18px;
+}
+.workbench-module .content-section {
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+.workbench-module .section-item {
+  min-height: 96px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+.workbench-module[data-module="auto-figure"] main {
+  padding-top: 24px;
+  padding-bottom: 28px;
+}
+.workbench-module[data-module="auto-figure"] .layout {
+  gap: 18px;
+  margin-top: 18px;
+}
+.workbench-module[data-module="auto-figure"] article {
+  padding: 20px;
+}
+@media (max-width: 760px) {
+  .workbench-shell:not(.journey-page) main {
+    padding: 24px 16px;
+  }
+  .workbench-shell:not(.journey-page) .pipeline-console {
+    padding: 16px;
+  }
+  .workbench-shell:not(.journey-page) .module-card {
+    padding: 20px 18px 0;
+  }
+  .workbench-module .workspace {
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 26px;
+  }
+  .workbench-module .task-heading {
+    gap: 14px;
+    padding-top: 22px;
+    padding-bottom: 16px;
+  }
+  .workbench-module .workspace-empty {
+    min-height: 360px;
+    padding: 28px 0;
+  }
+  .workbench-module[data-module="auto-figure"] main {
+    padding: 20px 14px;
+  }
+}
