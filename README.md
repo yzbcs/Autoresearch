@@ -1,6 +1,10 @@
 # AutoResearch
 
-AutoResearch 将 **Auto Search、Auto Design、Auto Writing、Auto Table、Auto Figure** 整合到一个网页入口，支持从调研自动交接到实验和论文，同时保留各模块的独立任务。首页可管理全流程、恢复失败步骤并重启研究服务。
+AutoResearch 将 **Auto Search、Auto Design、Auto Writing、Auto Table、Auto Figure** 整合到一个网页入口，支持从调研自动交接到实验和论文，同时保留各模块的独立任务。首页可管理全流程、恢复失败步骤并重启研究服务，**Research Journey（科研航线）** 可查看各阶段进展、分支和关联产物。
+
+## 📖 [点击进入 Wiki 图文使用手册 →](https://github.com/yzbcs/Autoresearch/wiki)
+
+第一次使用？从这里开始：**页面操作指引 · 五模块使用步骤 · 科研航线 · 常见问题 · PDF 图文版下载**。
 
 ## 五模块工作台
 
@@ -25,6 +29,18 @@ python3 -m workbench --port 8760
 Auto Table 支持上传论文 ZIP、上传结构化实验结果，或接续 Auto Writing 已生成的论文。保持原始数值、方法名与来源，提供模板规划、失败恢复、表格源码和 PDF 下载。完整说明见 [Auto Table](auto_table/README.md)。新建全流程自动执行 Auto Search → Auto Design → Auto Writing → Auto Table → Auto Figure，最后以方法主图插入、论文编译与复核通过作为交付完成条件；五个模块也可独立启动。历史流程保留原完成语义。AutoFigure 复用已通过复核的 AutoTable 论文副本，保留表格和正文，交付 SVG、LaTeX ZIP 与含图 PDF。绘图依赖与配置见 [Auto Figure](auto_figure/README.md)。
 
 任务数据默认保存在 `assets/output/workbench/`。启动或切换页面不会自动启动研究任务。完整启动参数、功能范围和验收记录见 [工作台说明](workbench/README.md) 与 [开发记录](docs/README.md)。
+
+## Research Journey · 科研航线
+
+启动工作台后，点击顶部「科研航线」，或打开 [Research Journey](http://127.0.0.1:8760/journey.html)。它使用现有全流程记录，不需要额外启动服务或执行前端构建。
+
+- **真实进度**：查看论文数、候选 Idea、实验观测单元和设计调用次数；缺失记录显示 `—`。
+- **交互航线**：查看五阶段及已记录的候选、R0 和方法修改分支；支持拖动、缩放、缩略图定位、全屏和 SVG 导出。
+- **节点详情**：查看当前状态与关联产物，进入原模块继续操作。
+- **事件时间线**：浏览已记录事件，每约 4 秒同步；历史事件不代表历史状态回放。
+- **中英文界面**：右上角切换中文 / English，并记住选择；任务名称、研究内容和原始日志保留原文。
+
+关闭「实时更新」只暂停页面同步；「暂停流程」沿用工作台暂停功能，恢复与审批在「管理流程」或原模块处理。观测记录不代表实验或审计通过。详细操作见 [航线使用指南](docs/RESEARCH_JOURNEY.zh-CN.md) 或 [Wiki 补充页](https://github.com/yzbcs/Autoresearch/wiki/Research-Journey)。
 
 ## 原有 AutoResearch CLI
 

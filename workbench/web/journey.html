@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Research Journey · The ThAInker</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="journey.css" />
+    <link rel="stylesheet" href="shell.css" />
+    <link rel="stylesheet" href="module-nav.css" />
+    <script src="vendor/svg-pan-zoom/svg-pan-zoom.min.js" defer></script>
+    <script src="journey-i18n.js" defer></script>
+    <script src="journey.js" defer></script>
+  </head>
+  <body class="workbench-shell journey-page">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="AutoResearch 工作台"
+        ><span class="brand-logo-frame"
+          ><img
+            src="/auto-design/assets/the-thainker-logo.png"
+            alt="The ThAInker" /></span
+        ><span
+          ><strong>The ThAInker</strong><small>Research Journey</small></span
+        ></a
+      >
+      <button
+        id="journey-sidebar-toggle"
+        class="sidebar-toggle"
+        aria-label="打开研究任务"
+        aria-controls="journey-sidebar"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+      <nav class="module-nav" aria-label="研究模块">
+        <a href="/">工作台</a
+        ><a href="/journey.html" aria-current="page">Research Journey</a
+        ><a href="/auto-search/">Auto Search</a
+        ><a href="/auto-design/">Auto Design</a
+        ><a href="/auto-writing/">Auto Writing</a
+        ><a href="/auto-table/">Auto Table</a
+        ><a href="/auto-figure/">Auto Figure</a>
+      </nav>
+      <select id="language" class="language-picker" aria-label="选择语言">
+        <option value="zh-CN">中文</option>
+        <option value="en">English</option>
+      </select>
+    </header>
+    <aside id="journey-sidebar" class="sidebar" aria-label="研究任务">
+      <div class="sidebar-heading">
+        <span class="small-icon">◈</span>
+        <h2>研究任务</h2>
+        <span id="flow-count" class="count">0</span>
+      </div>
+      <label class="sr-only" for="filter">搜索研究任务</label
+      ><input
+        id="filter"
+        type="search"
+        placeholder="搜索任务名称或研究方向…"
+        autocomplete="off"
+      />
+      <div id="flow-list"><p class="muted">正在读取研究任务…</p></div>
+      <a class="button new-research" href="/?create=1"
+        ><span>＋</span> 新建研究</a
+      >
+      <div class="sidebar-bottom">
+        <span class="eyebrow">WORKSPACE</span>
+        <div class="connection">
+          <i id="connection-dot"></i><span id="connection">正在连接</span>
+        </div>
+        <p>沿用原有任务与科学审批<br />点击航线节点查看证据和产物</p>
+        <a href="/">返回完整工作台 ↗</a>
+      </div>
+    </aside>
+    <button
+      id="journey-sidebar-scrim"
+      class="sidebar-scrim"
+      aria-label="关闭研究任务"
+      hidden
+    ></button>
+    <main>
+      <section class="page-heading">
+        <div>
+          <div class="title-row">
+            <h1>Research Journey</h1>
+            <span class="tag">研究全程可追溯</span>
+          </div>
+          <p>让每一次探索、调整与发现，都有迹可循。</p>
+        </div>
+        <div class="heading-actions">
+          <span id="flow-status" class="status-pill" hidden></span
+          ><a id="manage-flow" class="button secondary" href="/">管理流程 ↗</a
+          ><button id="pause-flow" class="secondary" hidden>Ⅱ 暂停流程</button>
+        </div>
+      </section>
+      <p id="notice" class="notice" role="status" hidden></p>
+      <section id="welcome" class="welcome" hidden>
+        <span class="welcome-symbol">⌁</span>
+        <h2>从一个问题，出发。</h2>
+        <p>
+          还没有全流程任务。创建研究后，论文、选题、实验与最终交付会在这里连接成一条航线。
+        </p>
+        <a href="/?create=1" class="button">＋ 创建第一项研究</a>
+        <p class="welcome-note">已有独立任务？在工作台新建全流程时选择接续。</p>
+      </section>
+      <div id="journey-workspace" hidden>
+        <section class="metrics" aria-label="研究概况" id="metrics"></section>
+        <div class="workspace-grid">
+          <div class="canvas-column">
+            <section class="map-panel" aria-label="科研航线画布">
+              <div class="map-heading">
+                <div>
+                  <span class="eyebrow">RESEARCH JOURNEY</span>
+                  <h2 id="project-title" data-user-content></h2>
+                </div>
+                <span id="updated-at" class="muted"></span>
+              </div>
+              <nav
+                id="stage-strip"
+                class="stage-strip"
+                aria-label="五阶段进度"
+              ></nav>
+              <div
+                id="canvas-scroll"
+                class="canvas-scroll"
+                tabindex="0"
+                aria-label="航线画布，拖动平移，滚轮缩放，方向键平移，数字零适应画布"
+              >
+                <svg
+                  id="route-map"
+                  viewBox="0 0 1580 550"
+                  role="group"
+                  aria-label="研究航线，使用 Tab 选择节点，回车查看详情"
+                ></svg>
+                <div class="canvas-hint">
+                  拖动画布 · 滚轮缩放 · 双击节点进入模块
+                </div>
+                <div class="overview">
+                  <span>航线总览</span
+                  ><svg
+                    id="minimap"
+                    viewBox="0 0 1580 550"
+                    role="img"
+                    aria-label="航线缩略图"
+                  ></svg>
+                </div>
+              </div>
+              <div class="map-footer">
+                <div class="legend">
+                  <span><i class="done"></i>已完成</span
+                  ><span><i class="running"></i>运行中</span
+                  ><span><i class="waiting"></i>待处理</span
+                  ><span><i class="pending"></i>未开始</span>
+                </div>
+                <div class="zoom-controls">
+                  <button id="zoom-in" aria-label="放大航线">＋</button
+                  ><button id="zoom-out" aria-label="缩小航线">−</button
+                  ><output id="zoom-level" aria-label="缩放比例">100%</output
+                  ><button id="zoom-fit">全览</button
+                  ><button id="focus-current">定位当前</button
+                  ><button id="map-fullscreen" aria-label="全屏航线">⛶</button
+                  ><button id="export-map">导出 SVG</button>
+                </div>
+              </div>
+            </section>
+            <section class="timeline-panel" aria-label="研究事件时间线">
+              <div class="timeline-heading">
+                <h2>◷ 研究足迹</h2>
+                <div>
+                  <button
+                    id="live-toggle"
+                    aria-pressed="true"
+                    class="live-toggle"
+                  >
+                    实时更新 <i></i></button
+                  ><span id="refresh-time" class="muted"></span>
+                </div>
+              </div>
+              <div id="timeline" class="timeline"></div>
+              <div
+                id="event-detail"
+                class="event-detail"
+                data-user-content
+              ></div>
+              <p class="timeline-note">
+                时间线仅展示已记录事件；上方航线与节点详情始终显示最近一次同步的状态。
+              </p>
+            </section>
+          </div>
+          <aside class="inspector" aria-label="节点详情">
+            <div class="inspector-heading">
+              <h2>节点详情</h2>
+              <span>↗</span>
+            </div>
+            <div id="node-detail"></div>
+          </aside>
+        </div>
+      </div>
+      <footer class="page-footer">
+        The ThAInker · AutoResearch
+        <span>真实任务数据 · 不推断未记录的研究过程</span>
+      </footer>
+    </main>
+  </body>
+</html>
