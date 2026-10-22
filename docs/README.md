@@ -1,5 +1,12 @@
 # AutoResearch 开发交接
 
+## 软件使用手册
+
+- [新手图文手册（Markdown）](USER_MANUAL.zh-CN.md)
+- [新手图文手册（PDF，含 18 张前端操作截图）](AutoResearch_软件使用说明书.pdf)
+- 配套截图与编号指引：`manual-images/`，提交时请一并保留。
+
+
 ## 当前开发仓库
 
 自 2026-10-16 起，本项目在 [yzbcs/Autoresearch](https://github.com/yzbcs/Autoresearch) 的 `main` 分支继续开发。本地 `origin` 指向该仓库，当前分支跟踪 `origin/main`；原 `wanghao1118/LL-AutoResearch` 保留为 `upstream`，用于查阅上游历史。日常 `git pull`、`git push` 使用自己的仓库。

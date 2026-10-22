@@ -1,0 +1,110 @@
+[
+  {
+    "section": "### 2.1 首页从上到下怎么看",
+    "image": "01-home-guide.png",
+    "title": "图 1 · 首页：先找到入口",
+    "legend": "1 顶部导航切换模块；2 点击新建全流程；3 服务恢复入口；4 四模块卡片可独立进入。首次使用先认清这四处，不需要先修改工具路径。"
+  },
+  {
+    "section": "### 4.1 打开表单",
+    "image": "02-flow-form-guide.png",
+    "title": "图 2 · 新建全流程：按编号填写",
+    "legend": "1 任务名称；2 起点；3 已有任务；4 研究方向；5 论文数；6 手动或自动选题；7 可选模板；8 启动全流程。图中仅填写示例，未点击启动。"
+  },
+  {
+    "section": "### 5.1 创建一个独立调研",
+    "image": "03-search-form-guide.png",
+    "title": "图 3 · Search：新建调研窗口",
+    "legend": "1 填研究方向；2 选论文数量；3 保留独立评审；4 点击创建会立即启动调研。本截图停在提交前。"
+  },
+  {
+    "section": "### 5.3 先读“概览”：判断问题是否成立",
+    "image": "13-search-reading-guide.png",
+    "title": "图 4 · Search：从左侧候选到右侧证据",
+    "legend": "1 在文件夹下选择 Idea；2 切换内容页签；3 正式任务中打开来源论文；4 先读 Weakness；5 再看贡献。本图为合成演示内容，不对应真实论文。"
+  },
+  {
+    "section": "### 5.5 看“评审”：分数不是最终决定",
+    "image": "14-search-review-guide.png",
+    "title": "图 5 · Search：评审结论、风险和必要修改",
+    "legend": "1 先看评审结论；2 看各项评分；3 优先检查主要风险；4 阅读必要修改。分数是界面演示占位值，不是本次运行的模型评审。"
+  },
+  {
+    "section": "### 5.6 做“人工核验”",
+    "image": "15-search-human-guide.png",
+    "title": "图 6 · Search：人工核验的两个选择",
+    "legend": "1 核验状态；2 点击通过；3 点击废弃。再次点击当前已选项可以撤销；图中未保存任何核验决定。"
+  },
+  {
+    "section": "### 6.1 新建实验表单逐项填写",
+    "image": "04-design-form-guide.png",
+    "title": "图 7 · Design：新建实验的六个位置",
+    "legend": "1 名称；2 后台机器上的项目目录；3 仅设计或完整流程；4 Idea 内容；5 可选文件；6 创建任务。创建只保存输入，下一张图才是执行入口。"
+  },
+  {
+    "section": "### 6.2 创建后，先看再运行",
+    "image": "05-design-task-guide.png",
+    "title": "图 8 · Design：创建后先检查，后执行",
+    "legend": "1 左侧选任务；2 看状态；3 开始执行入口；4 五个内容页签；5 核对项目和任务路径。本图任务未执行，没有实验结果。"
+  },
+  {
+    "section": "### 6.9 接续旧实验",
+    "image": "06-design-import-guide.png",
+    "title": "图 9 · Design：接续实验不要填错目录",
+    "legend": "1 填原项目根目录；2 填包含状态文件的已有运行目录；3 导入只登记，不自动执行。两个路径通常不同。"
+  },
+  {
+    "section": "### 7.1 创建写作项目",
+    "image": "07-writing-form-guide.png",
+    "title": "图 10 · Writing：选择说明文件后再创建",
+    "legend": "1 写作名称；2 已选实验说明文件与移除入口；3 可选补充资料；4 创建写作。图中文件明确标注为手册演示材料。"
+  },
+  {
+    "section": "### 7.4 推荐新手先走一遍手动写作",
+    "image": "08-writing-workflow-guide.png",
+    "title": "图 11 · Writing：自动模式和手动步骤的位置",
+    "legend": "1 自动完成入口；2 左侧选章节；3 右侧先调研、再生成；4 铅笔图标修改材料；5 查看日志。本图为未生成项目，灰色按钮展示前置条件限制。"
+  },
+  {
+    "section": "### 7.5 按钮变灰或显示锁怎么办",
+    "image": "09-writing-locked-guide.png",
+    "title": "图 12 · Writing：排版页锁住时先补齐缺项",
+    "legend": "1 这里列出未完成的章节与引用任务；2 返回写作流程或参考文献页处理。锁定提示是正常依赖检查，不是需要重复创建项目。"
+  },
+  {
+    "section": "### 7.10 手动排版与下载",
+    "image": "16-writing-publication-guide.png",
+    "title": "图 13 · Writing：模板、编译和下载按钮",
+    "legend": "1 选择模板 ZIP；2 适配并编译；3 查看编译器状态；4 下载源码；5 下载 PDF。本图用隔离的合成前置文件展示控件位置，没有生成论文或 PDF，因此下载与编译按钮尚不可用。"
+  },
+  {
+    "section": "### 8.2 路径一：整理已有论文表格",
+    "image": "10-table-paper-form-guide.png",
+    "title": "图 14 · Table：已有论文使用 ZIP 模式",
+    "legend": "1 项目名；2 选择论文 ZIP；3 上传 ZIP 与可选参考 PDF；4 写清整理要求；5 有需要才展开高级设置；6 创建后直接开始。截图尚未提交。"
+  },
+  {
+    "section": "### 8.3 路径二：实验数据制表",
+    "image": "11-table-data-form-guide.png",
+    "title": "图 15 · Table：数据模式与配置位置",
+    "legend": "1 切换实验数据；2 选择 CSV / TSV / JSON / JSONL；3 默认 JSON 保持 {}。展开高级设置后窗口变长，需向下滚动；下一张图展示下面的开关与提交按钮。"
+  },
+  {
+    "section": "### 8.4 高级配置什么时候用",
+    "image": "18-table-advanced-lower-guide.png",
+    "title": "图 16 · Table：向下滚动后的高级设置",
+    "legend": "1 JSON 配置覆盖；2 新手不要随意勾选跳过自动设计；3 创建并开始整理。此图刻意截取弹窗下半部分，与上一张合起来看。"
+  },
+  {
+    "section": "### 8.5 路径三：接续 Auto Writing",
+    "image": "12-table-import-guide.png",
+    "title": "图 17 · Table：接续写作项目",
+    "legend": "1 选择接续 Auto Writing；2 在此选择已有 LaTeX ZIP 的项目；3 创建并开始整理。图中暂无可用项目，应先回 Writing 完成源码生成。"
+  },
+  {
+    "section": "### 9.4 首页服务恢复面板怎么用",
+    "image": "17-service-guide.png",
+    "title": "图 18 · 首页：服务恢复入口",
+    "legend": "1 Codex 路径；2 LaTeX 路径；3 启动 / 重启；4 保存路径并重启；5 完整服务日志。这里只定位控件，本次未改工具配置或执行重启。"
+  }
+]
