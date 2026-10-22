@@ -2,7 +2,9 @@
 
 AutoResearch 将 **Auto Search、Auto Design、Auto Writing、Auto Table、Auto Figure** 整合到一个网页入口，支持从调研自动交接到实验和论文，同时保留各模块的独立任务。首页可管理全流程、恢复失败步骤并重启研究服务，**Research Journey（科研航线）** 可查看各阶段进展、分支和关联产物。
 
-Research Journey 功能位于 [`research-journey` 分支](https://github.com/yzbcs/Autoresearch/tree/research-journey)。图文操作说明见 [GitHub Wiki](https://github.com/yzbcs/Autoresearch/wiki)，新增功能见 [航线使用指南](docs/RESEARCH_JOURNEY.zh-CN.md)。
+## 📖 [点击进入 Wiki 图文使用手册 →](https://github.com/yzbcs/Autoresearch/wiki)
+
+第一次使用？从这里开始：**页面操作指引 · 五模块使用步骤 · 科研航线 · 常见问题 · PDF 图文版下载**。
 
 ## 五模块工作台
 
@@ -39,8 +41,6 @@ Auto Table 支持上传论文 ZIP、上传结构化实验结果，或接续 Auto
 - **中英文界面**：右上角切换中文 / English，并记住选择；任务名称、研究内容和原始日志保留原文。
 
 关闭「实时更新」只暂停页面同步；「暂停流程」沿用工作台暂停功能，恢复与审批在「管理流程」或原模块处理。观测记录不代表实验或审计通过。详细操作见 [航线使用指南](docs/RESEARCH_JOURNEY.zh-CN.md) 或 [Wiki 补充页](https://github.com/yzbcs/Autoresearch/wiki/Research-Journey)。
-
-本次页面仅优化间距、留白和区域尺寸，保留原有 Logo、配色、控件和操作流程；原图文手册、PDF 与截图引用继续沿用。
 
 ## 原有 AutoResearch CLI
 
