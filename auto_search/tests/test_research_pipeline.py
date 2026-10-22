@@ -69,13 +69,13 @@ def evaluation(ids: list[str]) -> dict[str, object]:
 
 
 class ResearchPipelineTests(unittest.TestCase):
-    def test_load_manifest_requires_multiple_unique_papers(self) -> None:
-        manifest = {"search": {}, "papers": [paper("a"), paper("b")]}
+    def test_load_manifest_accepts_one_directly_relevant_paper(self) -> None:
+        manifest = {"search": {}, "papers": [paper("a")]}
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "papers.json"
             path.write_text(json.dumps(manifest), encoding="utf-8")
             loaded = research_pipeline.load_manifest(path)
-        self.assertEqual([item["id"] for item in loaded["papers"]], ["a", "b"])
+        self.assertEqual([item["id"] for item in loaded["papers"]], ["a"])
 
     def test_load_manifest_requires_reason_for_blocked_feasibility(self) -> None:
         blocked = paper("a")

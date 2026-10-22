@@ -52,10 +52,12 @@ class DirectionResearchTests(unittest.TestCase):
     def test_prompt_handles_broad_direction_and_requires_live_search(self):
         prompt = direction_research.render_research_prompt("医学图像", 3)
         self.assertIn("Live web search is enabled", prompt)
-        self.assertIn("exactly 3", prompt)
+        self.assertIn("up to 3", prompt)
         self.assertIn('"医学图像"', prompt)
         self.assertIn("Simplified Chinese", prompt)
-        self.assertIn("at least three distinct named public benchmarks", prompt)
+        self.assertIn("binding constraints", prompt)
+        self.assertIn("never fill the requested count with adjacent work", prompt)
+        self.assertIn("fewer than three is not by itself a blocker", prompt)
 
     def test_build_manifest_enriches_papers_and_creates_unique_ids(self):
         response = {
@@ -68,12 +70,17 @@ class DirectionResearchTests(unittest.TestCase):
         self.assertTrue(manifest["papers"][0]["scholar_url"].startswith("https://scholar.google.com/"))
         self.assertEqual(manifest["search"]["scope_summary"], "聚焦细粒度医学视觉问答。")
 
-    def test_ready_paper_requires_three_verified_benchmarks(self):
-        paper = paper_record("Too Few Benchmarks")
-        paper["benchmark_candidates"] = paper["benchmark_candidates"][:2]
+    def test_ready_paper_requires_a_verified_core_task_benchmark(self):
+        paper = paper_record("No Benchmark")
+        paper["benchmark_candidates"] = []
         response = {"scope_summary": "test", "papers": [paper, paper_record("Second Paper")]}
-        with self.assertRaisesRegex(ValueError, "fewer than three verified benchmarks"):
+        with self.assertRaisesRegex(ValueError, "no verified core-task benchmark"):
             direction_research.build_manifest("方向", response, 2)
+
+    def test_manifest_may_return_fewer_directly_relevant_papers_than_requested(self):
+        response = {"scope_summary": "只找到一篇直接相关论文。", "papers": [paper_record("Direct Paper")]}
+        manifest = direction_research.build_manifest("严格方向", response, 3)
+        self.assertEqual(len(manifest["papers"]), 1)
 
     def test_blocked_paper_can_omit_benchmark_after_normalization(self):
         blocked = paper_record("Blocked Paper")
@@ -112,7 +119,7 @@ class DirectionResearchTests(unittest.TestCase):
         resolve_cli.return_value = direction_research.Path("codex.exe")
         prompts = []
         invalid_paper = paper_record("Paper One")
-        invalid_paper["benchmark_candidates"] = invalid_paper["benchmark_candidates"][:2]
+        invalid_paper["benchmark_candidates"] = []
         responses = [
             {
                 "scope_summary": "test",
@@ -136,8 +143,8 @@ class DirectionResearchTests(unittest.TestCase):
 
         self.assertEqual(len(manifest["papers"]), 2)
         self.assertEqual(len(prompts), 2)
-        self.assertIn("fewer than three verified benchmarks", prompts[1])
-        self.assertIn("set that paper to blocked", prompts[1])
+        self.assertIn("no verified core-task benchmark", prompts[1])
+        self.assertIn("Do not add adjacent papers", prompts[1])
 
 
 if __name__ == "__main__":

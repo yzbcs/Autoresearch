@@ -1,6 +1,6 @@
-# AutoResearch 四模块工作台
+# AutoResearch 五模块工作台
 
-一个网页入口分别进入 Auto Search、Auto Design、Auto Writing 和 Auto Table。四个模块保留各自的完整前端、后台任务管理器、提示词、Schema、科学约束和独立启动方式。
+一个网页入口分别进入 Auto Search、Auto Design、Auto Writing、Auto Table 和 Auto Figure。五个模块保留各自的完整前端、后台任务管理器、提示词、Schema、科学约束和独立启动方式。
 
 ## 启动
 
@@ -128,3 +128,14 @@ PYTHONPATH=auto_search python3 -m pytest --import-mode=importlib tests auto_desi
 首页全流程已接入 AutoTable：写作完整完成后复制 LaTeX ZIP 和 PDF 到独立表格任务，整理、编译、逐页复核通过后才结束流程。最终下载入口指向 AutoTable，原写作源码保留。没有表格的论文保持源码不变并编译复核，不自动添加表格。编译失败复用源码；复核不通过会阻塞流程，点击继续开启同任务下一轮并携带复核意见。替换论文模板会回到写作，并重新交接新的表格任务；此前的表格产物保留。历史已完成的三阶段流程不会自动启动额外工作，可从其 Writing 任务新建流程接续。
 
 可选真实末段验收：`PYTHONPATH=src:auto_search .venv/bin/python3 -m workbench.tests.smoke_pipeline_live --serve`。它在独立的 `assets/output/pipeline-table-smoke/` 目录使用明确的调研、实验和写作工程响应，运行真实 TeX 编译及 AutoTable Codex 设计/复核，不启动科研 GPU。默认验收端口 8769；中断后使用 `--resume <原验收目录>`，保留原任务继续。
+
+## AutoFigure 接入
+
+新建全流程在 AutoTable 完整论文达到 `ready` 后接续 AutoFigure。也可从首页选择已有 AutoTable
+论文任务，或进入 `/auto-figure/` 上传 LaTeX ZIP。AutoFigure 生成方法主图 SVG，对论文副本应用
+局部插图补丁，编译并复核完整 PDF；原写作和表格产物不变。绘图失败不重跑此前阶段。
+
+原有已完成流程不会自动重开；更换模板或运行中发现 AutoTable 来源版本变化时，旧主图失效。
+主图任务参与统一停止、服务重启和活动任务检测。数据与日志在 `data-dir/auto_figure/` 下，
+目录命名使用 `标题-figure-北京时间戳`。独立绘图环境、模型服务与 SAM 配置见
+[Auto Figure](../auto_figure/README.md)。

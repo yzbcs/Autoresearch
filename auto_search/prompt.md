@@ -23,13 +23,13 @@ Your task is to propose one coherent solution. Infer the likely research domain 
 
 Before selecting an idea, audit whether the proposal can be implemented and evaluated with released data and a realistic academic compute budget. This is a hard gate, not a discussion item added after the method is written.
 
-1. Use live web search to verify named public datasets and at least three distinct public benchmarks that directly support the task. Every dataset and benchmark must link to an official dataset page, official repository, publisher page, or proceedings page. Prefer benchmark evidence supplied in the weakness data, but verify and expand it when needed. Never invent a dataset, URL, access condition, label type, split, license, or annotation.
+1. Use live web search to verify one or more named public benchmarks that directly support the final task. Every dataset and benchmark must link to an official dataset page, official repository, publisher page, or proceedings page. Prefer benchmark evidence supplied in the weakness data, but verify and expand it when needed. Multiple independent benchmarks strengthen external validity, but an arbitrary count is not a substitute for task relevance. Never invent a dataset, URL, access condition, label type, split, license, or annotation.
 2. For each of the three prospective contributions, identify an independently measurable outcome using released labels or deterministic measurements derived from images and released labels. A final task score alone is insufficient when it cannot test the central intermediate mechanism.
 3. Existing public labels originally created by clinicians may be reused. Do not require any new annotation, relabeling, adjudication, rating, ranking, quality review, explanation review, or blind evaluation by doctors or other clinical experts.
 4. If no benchmark directly supports the mechanism, allow adaptation only when it is deterministic and reproducible from public inputs and existing labels, such as programmatic corruption, image transforms, label regrouping, or measurements computed from released masks. The adaptation must not infer new clinical truth with a model and then treat that prediction as ground truth.
-5. Reject the idea if any core contribution needs new clinical-expert work, fewer than three verified public benchmarks can test the proposal, deterministic adaptation cannot close the gap, or data access is uncertain.
+5. Reject the idea if any core contribution needs new clinical-expert work, no verified public benchmark can test the final task, the critical mechanism has no independent measurement from released labels or deterministic diagnostics, deterministic adaptation cannot close a necessary gap, or required data access is uncertain. Do not reject an otherwise testable proposal merely because fewer than three benchmarks are available.
 6. If evaluation includes downstream tasks beyond the method's construction objective, require at least two distinct downstream task types and identify which benchmarks test each task. Do not count two datasets for the same task as two downstream tasks.
-7. Decide from currently confirmed evidence, not a hoped-for future repository inspection. If a required label field, image-to-label mapping, training split, access permission, or evaluation protocol is described as unknown, unverified, conditional, or something to check later, return PASS now.
+7. Decide from currently confirmed evidence, not a hoped-for future repository inspection. Return PASS when an unknown label field, image-to-label mapping, training split, access permission, or evaluation protocol is necessary for the final task or a central mechanism claim. Narrow secondary claims when optional evidence is unavailable instead of turning every incomplete auxiliary check into a full stop.
 
 If the feasibility gate fails, do not force a contribution. Return the PASS document defined below. If it passes, return the complete Idea document and make the benchmark support concrete.
 
@@ -188,7 +188,7 @@ Repeat the same card structure for every additional construction dataset.
 
 **Benchmark**
 
-List at least three distinct public benchmarks, numbered consecutively. Prefer benchmarks that can be used directly. Use adaptation only when direct evaluation cannot test a core claim.
+List every distinct public benchmark actually needed by the evaluation, with at least one benchmark that directly tests the final task. Number them consecutively. Prefer several independent benchmarks when they are relevant and available, but do not add loosely related benchmarks to reach a quota. Use adaptation only when direct evaluation cannot test a core claim.
 
 #### Benchmark (1)：[官方 Benchmark 名称](https://official-primary-url)
 
@@ -200,9 +200,9 @@ List at least three distinct public benchmarks, numbered consecutively. Prefer b
 
 **对应贡献：** State which of Contribution (1), (2), and (3) this benchmark can falsify and how.
 
-Repeat this card structure for Benchmark (2), Benchmark (3), and any additional benchmarks.
+Repeat this card structure for every additional benchmark.
 
-**下游任务：** If downstream-task evaluation is involved, give a numbered list of at least two distinct task types and map each task to its benchmarks. Otherwise begin with exactly `不涉及下游任务：` and explain why the three or more benchmarks directly evaluate the core task. Do not evade the two-task rule by renaming datasets or metrics as tasks.
+**下游任务：** If downstream-task evaluation is involved, give a numbered list of at least two distinct task types and map each task to its benchmarks. Otherwise begin with exactly `不涉及下游任务：` and explain how the listed benchmark or benchmarks directly evaluate the core task. Do not evade the two-task rule by renaming datasets or metrics as tasks.
 
 **标注来源：** State that only released annotations are used and explicitly confirm that no new doctor annotation, review, rating, or adjudication is required.
 

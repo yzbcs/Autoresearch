@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "message": {
+      "type": "string"
+    },
+    "calls": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "list_files",
+              "read_text",
+              "view_image",
+              "pdf_page",
+              "pdf_crop",
+              "write_file",
+              "execute",
+              "inspect",
+              "review",
+              "finish"
+            ]
+          },
+          "arguments_json": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "arguments_json"
+        ]
+      }
+    }
+  },
+  "required": [
+    "message",
+    "calls"
+  ]
+}

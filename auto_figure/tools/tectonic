@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -uo pipefail
+# FigureCrafter-only compiler wrapper. Existing modules keep their original compiler.
+real="${FIGURECRAFTER_TECTONIC_REAL:?missing Tectonic executable}"
+if "$real" --only-cached "$@"; then exit 0; fi
+printf '%s\n' 'FigureCrafter: cached-only compilation failed; retrying with normal resource download.' >&2
+exec "$real" "$@"

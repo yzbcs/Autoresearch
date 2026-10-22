@@ -1,0 +1,13 @@
+{
+  "version": "2.5.1",
+  "base": "drawing-v2.5",
+  "inputs": {
+    "style-reference-03.png": "fa084f974113bc4e4b1c91322701747d94eefafbea51f753adb78c2a6f12b270",
+    "style-reference-02.png": "9bfc7cda5ff2b7a954b0ba572607624322acb00a572bb1cae2513873bae54252",
+    "style-reference-01.png": "090a9dd1d15e160e1259762af952c425c2840cc3e8773594367e2d7c1bb13629",
+    "paper-without-main-figure.pdf": "848872907d2d77af32c752cec977a2761f21681d36189eb821de25c220135fe6"
+  },
+  "copied_executor_sha256": "e9da0add390d43a68424db5ae47757a511a27eaf6a0e5e3151be6466f3d168cf",
+  "private_dependencies_copied": false,
+  "guides_origin": "framework_versions/drawing-v2.5/production-inputs/cafe-retest-20261011"
+}

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>The ThAInker · Auto Figure</title><link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css"><script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><a href="./" class="brand">The ThAInker · Auto Figure</a></header>
+  <main>
+    <div class="heading"><div><small>FIGURECRAFTER</small><h1>论文方法主图</h1><p>接续 Auto Table 论文，确认三张风格参考图后生成主图，交付含图完整论文 PDF、独立主图 PDF 和可编辑 PPTX。</p></div><button id="new">新建任务</button></div>
+    <p id="notice" role="status" hidden></p><details><summary>工具连接状态</summary><p id="health">正在检查</p></details>
+    <form id="create" hidden>
+      <h2>新建论文绘图任务</h2><p>选择已通过复核的 Auto Table 论文，或上传包含主 TeX 文件的完整 LaTeX ZIP。</p>
+      <label>任务名称<input name="title" required maxlength="120"></label>
+      <label>接续 AutoTable<select id="table"><option value="">上传论文 LaTeX ZIP</option></select></label>
+      <div id="uploads"><label>论文 LaTeX ZIP<input id="zip" type="file" accept=".zip"></label><label>论文 PDF（可选，绘图输入由源码编译）<input id="pdf" type="file" accept=".pdf"></label></div>
+      <label>主图要求（可选）<textarea name="requirements" rows="3" placeholder="例如：横向布局，区分训练和推理，突出核心模块"></textarea></label>
+      <details><summary>高级设置</summary><label>主 TeX 相对路径（多个主文件时指定）<input name="main_file" placeholder="main.tex"></label><label>绘图配置 JSON（可选，留空继承服务配置）<textarea id="config" rows="3" placeholder='{"reasoning_effort":"medium","timeout_seconds":3600}'></textarea></label></details>
+      <button type="submit">保存并选择三张参考图</button>
+    </form>
+    <div class="layout"><aside id="projects" aria-label="任务列表"></aside><article id="detail"><h2>开始论文绘图</h2><p>全流程会在 Auto Table 复核通过后自动将论文交接到这里。也可以点击“新建任务”，接续已有论文或上传 LaTeX ZIP。</p><p>随后确认三张参考图，开始生成方法主图。完成后可下载含图完整论文、独立主图 PDF 和可编辑 PPTX。</p></article></div>
+  </main>
+</body>
+</html>

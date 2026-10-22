@@ -1,0 +1,16 @@
+{
+  "executor_changes": [
+    "Explicit DRAWING_SOFFICE public binary support",
+    "Fix inventory EMU-to-mm divisor 360000→36000 in the new copy only",
+    "Default guides directory moved to ../guides"
+  ],
+  "guides_changes": [
+    "MODEL_LED_DRAWING: new standalone entry examples and human-only outer loop; underlying scientific strategies retained"
+  ],
+  "unchanged_guides": [
+    "OBJECT_COMPOSITION.zh-CN.md",
+    "STYLE_LEARNING.zh-CN.md",
+    "REFERENCE_JOINT_LEARNING.zh-CN.md"
+  ],
+  "originals_modified": false
+}

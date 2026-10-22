@@ -33,6 +33,9 @@ app = workbench_app
 
 @pytest.fixture(autouse=True)
 def table_engineering_fixture(app):
+    # Preserve explicit coverage of the legacy four-stage pipeline.
+    # Five-stage default and AutoTable handoff are exercised in test_figure_pipeline.py.
+    app.pipeline.figure = None
     from auto_table.tests.test_application import fake_compile
 
     def runner(prompt, schema, directory, logs, name, job):
@@ -335,21 +338,35 @@ def test_default_template_is_accepted_by_existing_zip_decoder(tmp_path):
     assert writing.zipfile.is_zipfile(writing.io.BytesIO(data))
 
 
-def test_queued_design_can_pause_without_waiting_for_another_experiment(app):
-    entered, release = threading.Event(), threading.Event()
-    app.design.runner = DesignRunner(entered, release)
+def test_design_tasks_run_concurrently_and_pause_independently(app):
     first, second = new_design(app), new_design(app)
+    entered = {Path(t["run_dir"]): threading.Event() for t in (first, second)}
+    release = {path: threading.Event() for path in entered}
+
+    class ParallelRunner(DesignRunner):
+        def invoke(self, prompt, workspace, log_dir, on_event):
+            entered[workspace].set()
+            assert release[workspace].wait(5)
+            return super().invoke(prompt, workspace, log_dir, on_event)
+
+    app.design.runner = ParallelRunner()
     try:
         app.design.start(first["id"])
-        assert entered.wait(5)
+        assert entered[Path(first["run_dir"])].wait(5)
         app.design.start(second["id"])
+        assert entered[Path(second["run_dir"])].wait(5)
+        with pytest.raises(ValueError):
+            app.design.start(first["id"])
         app.design.pause(second["id"])
-        await_condition(lambda: app.design.get(second["id"])["status"] == "paused")
+        release[Path(second["run_dir"])].set()
+        assert wait_idle(app.design, second["id"])["status"] == "paused"
         assert app.design.get(first["id"])["status"] == "running"
-        assert not app.design.get(second["id"])["attempts"]
+        assert len(app.design.get(second["id"])["attempts"]) == 1
     finally:
-        release.set()
-        wait_idle(app.design, first["id"])
+        for event in release.values():
+            event.set()
+        for task in (first, second):
+            wait_idle(app.design, task["id"])
 
 
 def test_handoff_recovers_existing_link_after_interruption(app, monkeypatch):

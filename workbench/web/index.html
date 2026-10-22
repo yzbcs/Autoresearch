@@ -29,6 +29,7 @@
       <a href="/auto-design/">Auto Design</a>
       <a href="/auto-writing/">Auto Writing</a>
       <a href="/auto-table/">Auto Table</a>
+      <a href="/auto-figure/">Auto Figure</a>
     </nav>
   </header>
   <main>
@@ -45,12 +46,12 @@
         <div class="button-row"><button id="restart-service" type="button">启动 / 重启服务</button><button id="save-service" class="secondary" type="button">保存路径并重启</button><a href="/api/service/log" target="_blank" rel="noopener">查看完整服务日志 ↗</a></div>
       </details>
       <form id="pipeline-form" hidden>
-        <div class="form-grid"><label>任务名称<input name="title" maxlength="120" placeholder="可选，默认使用研究方向"></label><label>起点<select name="start_stage" id="pipeline-stage"><option value="search">Auto Search · 从调研开始</option><option value="design">Auto Design · 接续已有实验</option><option value="writing">Auto Writing · 接续已有写作</option></select></label></div>
+        <div class="form-grid"><label>任务名称<input name="title" maxlength="120" placeholder="可选，默认使用研究方向"></label><label>起点<select name="start_stage" id="pipeline-stage"><option value="search">Auto Search · 从调研开始</option><option value="design">Auto Design · 接续已有实验</option><option value="writing">Auto Writing · 接续已有写作</option><option value="table">Auto Table · 接续已有论文表格</option></select></label></div>
         <label>已有任务<select name="source_id" id="pipeline-source"><option value="">新建调研任务</option></select></label>
         <label id="direction-field">研究方向<textarea name="direction" rows="3" maxlength="1000" placeholder="输入研究问题、关注的机制或任务"></textarea></label>
         <div class="form-grid"><label>调研论文数<select name="paper_count"><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></label><label>选题方式<select name="selection"><option value="auto">自动选择评审通过且排名最高的 Idea</option><option value="manual">调研完成后由我选择 Idea</option></select></label></div>
         <label>论文模板 ZIP（可选，默认使用通用 article 模板）<input id="pipeline-template" type="file" accept=".zip"></label>
-        <p class="scope-note">启动后将执行调研 → 实验设计与执行 → 诊断与审计 → 六章节写作 → 引用 → LaTeX / PDF → AutoTable 表格整理与复核。没有合格选题、需要方法审批或步骤失败时暂停；不会自动批准方法修改或将未完成实验当作论文证据。</p>
+        <p class="scope-note">启动后将执行调研 → 实验设计与执行 → 诊断与审计 → 六章节写作 → 引用 → LaTeX / PDF → AutoTable 表格整理与复核 → AutoFigure 方法主图与最终 PDF。没有合格选题、需要方法审批或步骤失败时暂停；不会自动批准方法修改或将未完成实验当作论文证据。</p>
         <button type="submit" id="create-pipeline">启动全流程</button>
       </form>
       <div class="pipeline-layout"><div id="pipeline-list" aria-label="全流程列表"><p class="empty-copy">正在读取任务</p></div><article id="pipeline-detail"><p class="empty-copy">选择一个全流程查看进展，或新建任务。</p></article></div>
@@ -83,6 +84,13 @@
         <p>整理已有论文或从结果文件制表，保留实验数值与比较口径，生成可编辑源码及经过复核的 PDF。</p>
         <ul><li>论文 ZIP 与实验数据双入口</li><li>科学角色、排名范围与排版</li><li>表格预览、来源记录与失败恢复</li></ul>
         <div class="card-footer"><span class="module-status" data-module="auto-table">正在连接服务</span><span class="enter">进入制表 <svg aria-hidden="true"><use href="#arrow"></use></svg></span></div>
+      </a>
+      <a class="module-card" href="/auto-figure/">
+        <div class="card-top"><span class="module-mark"><svg aria-hidden="true"><use href="#writing"></use></svg></span><span class="module-number">05</span></div>
+        <span class="eyebrow">ILLUSTRATE &amp; INTEGRATE</span><h2>Auto Figure</h2><h3>方法主图与论文整合</h3>
+        <p>从论文初稿生成可编辑的方法主图，局部插入正文，编译并复核最终论文。</p>
+        <ul><li>接续 AutoTable 或上传论文 ZIP</li><li>可编辑 SVG、图注与正文引用</li><li>含图论文 PDF、源码与修改记录</li></ul>
+        <div class="card-footer"><span class="module-status" data-module="auto-figure">正在连接服务</span><span class="enter">进入绘图 <svg aria-hidden="true"><use href="#arrow"></use></svg></span></div>
       </a>
     </section>
     <p class="workspace-note">模块内仍可独立操作。全流程任务在后台衔接，关闭或切换网页不停止执行；服务重启后需点击继续。</p>

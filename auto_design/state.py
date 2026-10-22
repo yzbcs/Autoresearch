@@ -305,7 +305,8 @@ def _refresh_state_snapshot(text: str, run_path: Path, stage: str) -> str:
     elif stage == "R0_PASSED":
         route = "R0 outcome recorded; awaiting revised design acceptance"
     elif stage == "WAITING_FOR_METHOD_REVISION_APPROVAL":
-        route = "accepted design retained; minimal method revision awaits human approval"
+        provisional = re.search(r"(?m)^\s*\|\s*Last completed stage\s*\|\s*INPUT_READY\s*\|", text)
+        route = ("provisional design retained; protocol revision awaits human approval" if provisional else "accepted design retained; minimal method revision awaits human approval")
     elif stage == "IDEA_ABANDONED":
         route = "current Idea abandoned by user decision"
     else:
@@ -390,9 +391,13 @@ def repair_state(run_dir: str | Path) -> dict[str, Any]:
     stage = read_current_stage(run_path)
     text = state_path.read_text(encoding="utf-8")
     text = _replace_state_field(text, "Current stage", stage)
-    text = _replace_state_field(
-        text, "Last completed stage", LAST_COMPLETED_STAGE.get(stage, stage)
+    preserve_provisional = stage == "WAITING_FOR_METHOD_REVISION_APPROVAL" and re.search(
+        r"(?m)^\s*\|\s*Last completed stage\s*\|\s*INPUT_READY\s*\|", text
     )
+    if not preserve_provisional:
+        text = _replace_state_field(
+            text, "Last completed stage", LAST_COMPLETED_STAGE.get(stage, stage)
+        )
     text = _replace_state_field(text, "Next action", NEXT_ACTION[stage])
     text = _refresh_state_snapshot(text, run_path, stage)
     state_path.write_text(text, encoding="utf-8")
@@ -457,10 +462,26 @@ def advance_run(
         raise ValueError(f"Unknown prompt-driven stage: {stage}")
     run_path = Path(run_dir)
     current = read_current_stage(run_path)
+    provisional_revision = stage == "WAITING_FOR_METHOD_REVISION_APPROVAL" and (
+        current == "R0_FAILED_RETURN_TO_DESIGN" or (
+            current == "WAITING_FOR_METHOD_REVISION_APPROVAL" and re.search(
+                r"(?m)^\s*\|\s*Last completed stage\s*\|\s*INPUT_READY\s*\|",
+                (run_path / "AUTODESIGN_STATE.md").read_text(encoding="utf-8"),
+            )
+        )
+    )
+    if provisional_revision:
+        for name in ("experiment_design.md", "r0_record.json", "breakpoint_recovery.md", "method_revision_request.md", "method_revision_proposal.md"):
+            if not (run_path / name).is_file():
+                raise ValueError("Provisional revision requires " + name)
+        if not REVISION_ID_PATTERN.search((run_path / "method_revision_proposal.md").read_text(encoding="utf-8")):
+            raise ValueError("Provisional revision requires explicit Revision ID")
     if stage == "WAITING_FOR_METHOD_REVISION_APPROVAL" and current not in {
         "EXPERIMENT_DESIGN_READY",
         "IMPLEMENTATION_READY",
         "EXECUTION_IN_PROGRESS",
+        "R0_FAILED_RETURN_TO_DESIGN",
+        "WAITING_FOR_METHOD_REVISION_APPROVAL",
     }:
         raise ValueError(
             "WAITING_FOR_METHOD_REVISION_APPROVAL requires an accepted design or active run"
@@ -520,9 +541,10 @@ def advance_run(
     text = state_path.read_text(encoding="utf-8")
     original_text = text
     text = _replace_state_field(text, "Current stage", stage)
-    text = _replace_state_field(
-        text, "Last completed stage", LAST_COMPLETED_STAGE.get(stage, stage)
-    )
+    if not provisional_revision:
+        text = _replace_state_field(
+            text, "Last completed stage", LAST_COMPLETED_STAGE.get(stage, stage)
+        )
     text = _replace_state_field(text, "Next action", NEXT_ACTION[stage])
     text = _refresh_state_snapshot(text, run_path, stage)
     history_rows = re.findall(r"^\s*\|\s*(\d+)\s*\|", text, flags=re.MULTILINE)

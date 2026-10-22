@@ -216,7 +216,6 @@ class TaskManager:
         self.root.mkdir(parents=True, exist_ok=True)
         self.index_path = self.root / "tasks.json"
         self.lock = threading.RLock()
-        self.worker_slot = threading.Semaphore(1)
         self.runner = runner or CodexRunner()
         self.tasks = read_json(self.index_path) if self.index_path.is_file() else {}
         self.threads: dict[str, threading.Thread] = {}
@@ -418,14 +417,7 @@ class TaskManager:
             return self.get(task_id)
 
     def _run(self, task_id: str) -> None:
-        acquired = False
         try:
-            while not acquired:
-                task = self.get(task_id)
-                if (Path(task["run_dir"]) / "pause_requested.json").exists():
-                    self.update(task_id, status="paused", summary="排队任务已暂停，尚未启动新调用。")
-                    return
-                acquired = self.worker_slot.acquire(timeout=0.2)
             while True:
                 task = self.get(task_id)
                 run_dir = Path(task["run_dir"])
@@ -458,11 +450,17 @@ class TaskManager:
                             {"outcome": "completed", "next_action": "none"},
                             stage,
                         )
-                    self.update(
-                        task_id,
-                        status="completed" if stage == "COMPLETE" else "abandoned",
-                        stage=stage,
-                    )
+                        self.update(task_id, status="completed", stage=stage)
+                    elif stage == "IDEA_ABANDONED":
+                        self.update(task_id, status="abandoned", stage=stage)
+                    else:
+                        self.update(
+                            task_id,
+                            status="paused",
+                            stage=stage,
+                            next_action=ACTION_FOR_STAGE.get(stage, "none"),
+                            summary="Worker reported no next action; held for application clarification instead of abandonment (app repair 2026-10-21).",
+                        )
                     return
                 if stage == "WAITING_FOR_METHOD_REVISION_APPROVAL" and not read_text(
                     run_dir / "method_revision_decision.md"
@@ -523,8 +521,6 @@ class TaskManager:
                 summary="本步骤未完成，请查看错误和日志后继续。",
             )
         finally:
-            if acquired:
-                self.worker_slot.release()
             with self.lock:
                 self.threads.pop(task_id, None)
 

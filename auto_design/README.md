@@ -170,3 +170,7 @@ node --check auto_design/web/app.js
 Node 只用于可选的 JavaScript 语法检查，运行服务不需要 Node。测试使用明确标注的工程 fixture，不启动科研模型训练或远端 GPU 实验。真实 CLI 连接验收也只检查结构化返回，不产生科学结果。当前交付证据见 [docs/README.md](../docs/README.md)。
 
 工作台已支持 Search → Design → Writing 自动文件交接和来源记录，见 [前端全流程说明](../docs/frontend_workflow.md)。单模块运行仍保留独立任务。
+
+## 项目并发（2026-10-21）
+
+移除全局单槽限制，不同任务的控制器独立推进。同一任务仍禁止重复启动，暂停与恢复仅作用于对应任务。实验执行前仍须核对GPU占用，遵守各任务GPU选择、并发与剩余预算。已通过本地33项相关测试；远端独立工程探针确认两任务同时进入执行器且拒绝重复启动。远端环境未安装pytest，未运行远端pytest套件。

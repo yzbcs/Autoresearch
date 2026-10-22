@@ -6,7 +6,7 @@ Auto Search 是 LL-AutoResearch 中面向科研选题与方法设计的交互式
 
 - **Weakness 直达 Idea**：输入当前领域的具体问题，通过 Codex CLI 生成结构化 Markdown 方案。
 - **研究方向自动调研**：检索并核验论文，逐篇提取 Weakness，再生成 Contribution、Method 和实验设计。
-- **可行性门槛**：要求公开 Benchmark、已发布标注和可复现实验路径；证据不足时输出结构化 PASS，而不是强行生成方案。
+- **可行性门槛**：至少一个公开 Benchmark 必须能够检验最终任务，三个 Contribution 的关键机制还需由已发布标注或确定性诊断独立验证；Benchmark 数量不足三个不再被错误地视为自动失败。
 - **独立评审**：对候选 Idea 进行评分、风险分析和排序。
 - **网页工作台**：以文件夹树管理调研任务，分板块展示 Weakness、成因、Contribution、方法、评审和人工核验。
 - **人工核验**：支持“通过”与“废弃”，再次点击已选状态可取消核验。
@@ -48,6 +48,12 @@ $env:W2C_PYTHON = "C:\path\to\python.exe"
 
 ```powershell
 $env:CODEX_CLI = "C:\path\to\codex.exe"
+```
+
+Auto Search 的论文调研、Idea 生成和独立评审默认统一使用 `gpt-5.6-sol`。如需临时覆盖：
+
+```powershell
+$env:AUTO_SEARCH_CODEX_MODEL = "gpt-5.6-sol"
 ```
 
 ## 快速开始
@@ -100,6 +106,8 @@ python .\web\serve.py
 访问 [http://127.0.0.1:8765/](http://127.0.0.1:8765/)。
 
 网页中的“新建调研”支持输入具体或宽泛的研究方向。任务会依次执行论文调研、Weakness 提取、Idea 生成和评审，并把结果保存在独立的 `research_runs/direction-*` 目录中。
+
+论文数量是上限而不是凑数指标。调研会把模型类型、模态、目标现象和任务作为范围约束；当直接相关的一手论文不足时返回较少论文，不用宽泛 VQA、普通定位或仅共享数据模态的论文补足数量。
 
 每个网页调研任务的 Codex 工作目录和子进程当前目录均为该任务的独立运行目录；论文调研、Idea 生成及评审共用同一任务目录。源码、提示词和 Schema 仍从模块安装位置读取。在三模块工作台中，任务根目录由工作台指定，默认是 `assets/output/workbench/auto_search/`。
 

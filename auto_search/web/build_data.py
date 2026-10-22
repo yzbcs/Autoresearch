@@ -309,11 +309,17 @@ def parse_idea(path: Path) -> dict[str, Any]:
         if section["title"] in {"数据集与 Benchmark", "Datasets and Benchmark"}:
             section["dataset_benchmark"] = parse_dataset_benchmark(section["body"])
 
+    contributions = parse_contributions(contribution_body)
+    if len(causes) != 3 or len(contributions) != 3:
+        raise ValueError(
+            "A non-PASS idea must expose exactly three root causes and three contributions."
+        )
+
     return {
         "idea_title": title,
         "weakness": weakness,
         "causes": causes,
-        "contributions": parse_contributions(contribution_body),
+        "contributions": contributions,
         "method_sections": method_sections,
         "is_pass": False,
     }

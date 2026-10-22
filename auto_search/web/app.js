@@ -282,6 +282,7 @@ function renderIdea(idea) {
   badge.className = `verdict-badge ${idea.review.verdict}`;
   badge.textContent = verdictLabels[idea.review.verdict] || idea.review.verdict;
   $("#sourceLink").href = idea.source_url || idea.scholar_url || "#";
+  $("#downloadIdeaLink").href = `${moduleBase}/api/runs/${encodeURIComponent(state.activeRun)}/ideas/${encodeURIComponent(idea.id)}/download`;
   $("#weaknessContent").innerHTML = renderMarkdown(idea.weakness);
   $("#overviewCauses").innerHTML = idea.causes.map((cause) => `
     <article class="overview-cause">

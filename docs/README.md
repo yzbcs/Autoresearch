@@ -159,3 +159,25 @@
 **真实末段与当前运行现况。** 新验收 `flow-3131ac5af603` 已达到 `completed`，对应表格任务 `table-3d5404a73952` 的五步均完成、复核 `passed: true`。真实 latexmk 输出 2 页 PDF，独立 Codex 复核确认 Baseline 81.0、Candidate 85.0 与输入一致，标题、标签、正文和参考文献保留。最终汇总在 `assets/output/pipeline-table-smoke/20260906-161039/summary.json`；PDF、LaTeX ZIP、替换表格、逐页 PNG 和 `deliverables.zip` 位于该目录下 `assets/output/workbench/auto_table/table-3d5404a73952/attempt-1/`。浏览器已验证四阶段完成状态、AutoTable 项目直达、PDF 与源码下载入口。常用 `http://127.0.0.1:8760/` 已重载当前 `test-v1` 代码，四模块均已连接；正常任务列表没有混入工程样例。
 
 **下一步洞察。** 表格模块已经成为交付链路的一部分，后续真实论文使用应保留现有失败恢复与科学审批边界；任何正式科研效果仍需对应设计契约下的真实实验和独立审计，工程验收不替代这些证据。
+
+
+### Round 9：切换服务器 Codex CLI 账户（2026-10-19）
+
+**设计动机。** 用户要求将 `wh/.codex` 的 ChatGPT 账户绑定到本项目。原统一入口仍指向项目外旧账户目录和 7897 代理。
+
+**具体方案与关键参数。** 将登录凭据复制到项目内 `.cache/codex/auth.json`（0600），使用 OpenAI provider 和文件凭据存储。修改 `deployment/ycodex` 与 `deployment/env.sh`，使用 7890 HTTP 代理；包装器加 `--no-daemon`。保留 `gpt-6-astra` / `medium`。源账户的禁用工具配置未复制；所有新增状态写入项目内。
+
+**结果数据。** 登录状态为 ChatGPT；真实 AutoTable `invoke` 返回 `{"status":"AUTORESEARCH_CODEX_OK"}`，进程退出码 0。日志、输入 Schema 和响应保存在 `assets/logs/codex-backend-binding/`。工作台在无活动任务时重新加载，`/api/service` 确认 connected=true，并核对运行进程已加载新 CODEX_HOME 和代理。
+
+**核心发现。** 账户和代理需要同时切换；仅存在 auth.json 不代表联网调用成功。共享包装器使现有模块调用统一使用新账户，无需改业务代码。
+
+**下一步洞察。** 已可使用网页启动原有流程；该验证不代表完整科研流程已执行。项目保存独立凭据，源目录以后更换账号不会自动同步，重新绑定需显式操作。
+
+
+## 2026-10-22 服务器代码同步
+
+本次将服务器工作区相对 `356fee51` 的代码改动合并到 GitHub `main` 的 `9435ecd3`，保留已有图文使用说明书与个人仓库更新。内容包括 FigureCrafter 第五阶段、调研范围与 benchmark 门槛调整、评审 JSON 修复、模型配置、实验控制器并发和状态修复。两处合并冲突分别位于 `.gitignore` 和 AutoSearch URL 导入，均保留双方需要的规则。新增绘图模块、参考图片和测试随代码提交；虚拟环境、运行产物、登录配置、服务器专用 AGENTS.md 和部署脚本不上传。Linux `.so` 由 README 所示 C 源码编译，不提交二进制。
+
+验证在服务器上的独立源码副本进行，未推进正式科研任务。六个模块测试合跑得到 **297 passed、4 skipped、9 failed、3 subtests passed**。失败均涉及真实 LibreOffice 渲染；缩短验证副本路径后，绘图相关复跑为 **26 passed、8 failed**，故仍不能声称绘图集成回归全部通过。转换记录显示 LibreOffice 返回退出码 1、未产出 PDF，并提示 javaldx；根因未确定，不能仅凭该提示判定 Java 是原因。JavaScript 语法与 Git diff 检查通过。修正了一条仍写死旧默认模型名的测试，使其核对实际默认模型配置。
+
+验证日志保存在服务器项目内 `assets/tmp/github-sync-20261022-tests.log` 和 `assets/tmp/github-sync-20261022-figure-tests.log`。本次仅同步源码，不改变正式服务器的 Git HEAD、Codex 登录目录或服务状态。

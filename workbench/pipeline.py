@@ -26,9 +26,10 @@ def encoded_file(path: Path) -> dict:
 
 
 class PipelineManager:
-    def __init__(self, root: Path, workspace: Path, design: TaskManager, table):
+    def __init__(self, root: Path, workspace: Path, design: TaskManager, table, figure=None):
         self.root, self.workspace, self.design = root, workspace, design
         self.table = table
+        self.figure = figure
         self.root.mkdir(parents=True, exist_ok=True)
         self.lock = threading.RLock()
         self.stop_event = threading.Event()
@@ -64,7 +65,7 @@ class PipelineManager:
         with self.lock:
             stage = str(payload.get("start_stage", "search"))
             selection = str(payload.get("selection", "auto"))
-            if stage not in {"search", "design", "writing"} or selection not in {"auto", "manual"}:
+            if stage not in {"search", "design", "writing", "table"} or selection not in {"auto", "manual"}:
                 raise ValueError("未知起点或选题方式。")
             direction = str(payload.get("direction", "")).strip()
             source = str(payload.get("source_id", "")).strip() or None
@@ -75,7 +76,7 @@ class PipelineManager:
                 raise ValueError("请填写 3 到 1000 个字符的研究方向。")
             if stage != "search" and not source:
                 raise ValueError("请选择已有的模块任务。")
-            field = {"search": "search_run", "design": "design_id", "writing": "writing_id"}[stage]
+            field = {"search": "search_run", "design": "design_id", "writing": "writing_id", "table": "table_id"}[stage]
             if source and any(
                 f.get(field) == source and f["status"] != "completed" for f in self.flows.values()
             ):
@@ -86,6 +87,9 @@ class PipelineManager:
                         raise ValueError("所选调研没有任务记录。")
                 elif stage == "design":
                     self.design.get(source)
+                elif stage == "table":
+                    if self.table.load(source)["mode"] != "manuscript":
+                        raise ValueError("接续表格需要完整论文任务。")
                 else:
                     writing.load_project(source)
             flow_id = "flow-" + uuid.uuid4().hex[:12]
@@ -115,6 +119,8 @@ class PipelineManager:
                 "design_id": None,
                 "writing_id": None,
                 "table_id": None,
+                "figure_id": None,
+                "figure_enabled": self.figure is not None,
                 "idea_id": None,
                 "status": "running",
                 "message": "已授权启动全流程。",
@@ -186,6 +192,10 @@ class PipelineManager:
                     raise ValueError("模板不是有效的 ZIP。")
                 if flow.get("table_id") and flow["table_id"] in self.table.jobs:
                     raise ValueError("请先暂停并等待表格步骤停止。")
+                if flow.get("figure_id") and self.figure and flow["figure_id"] in self.figure.jobs:
+                    raise ValueError("请先停止并等待主图步骤结束。")
+                if flow["stage"] in {"table", "figure"} and not flow.get("writing_id"):
+                    raise ValueError("从 AutoTable 接续的任务请上传新论文创建任务，不能回退到不存在的写作阶段。")
                 if flow.get("writing_id"):
                     project = writing.load_project(flow["writing_id"])
                     if writing.GENERATION_MANAGER.has_project_job(project["id"]):
@@ -208,6 +218,9 @@ class PipelineManager:
                     previous["pipeline_id"] = None
                     self.table.save(previous)
                     flow.update(table_id=None, stage="writing")
+                if flow.get("figure_id") and self.figure:
+                    self.figure.invalidate(flow["figure_id"])
+                    flow["figure_id"] = None
                 self.update(flow, "paused", "模板已保存，点击继续使用新模板排版。")
             else:
                 raise ValueError("未知流程操作。")
@@ -228,6 +241,8 @@ class PipelineManager:
                 (self.design.interrupt if interrupt else self.design.pause)(task["id"])
         elif flow["stage"] == "table" and flow.get("table_id"):
             self.table.stop(flow["table_id"])
+        elif flow["stage"] == "figure" and flow.get("figure_id") and self.figure:
+            self.figure.stop(flow["figure_id"])
         elif flow["stage"] == "writing" and flow.get("writing_id"):
             manager = writing.GENERATION_MANAGER
             manager.pause_auto(flow["writing_id"])
@@ -255,7 +270,10 @@ class PipelineManager:
         with self.lock:
             for flow in self.flows.values():
                 if flow["status"] not in {"running", "waiting_review"}:
-                    continue
+                    # Figure tasks may be resumed/reviewed on their own page. Observe
+                    # that child after a failure without retrying any upstream stage.
+                    if not (flow['status'] == 'blocked' and flow['stage'] == 'figure'):
+                        continue
                 try:
                     getattr(self, f"advance_{flow['stage']}")(flow)
                 except Exception as error:  # noqa: BLE001 - persist worker failures for browser recovery
@@ -453,6 +471,14 @@ class PipelineManager:
     def advance_table(self, flow: dict) -> None:
         project = self.table.load(flow["table_id"])
         if project["status"] == "ready":
+            if flow.get("figure_enabled") and self.figure is None:
+                raise ValueError("本流程需要 AutoFigure，但主图服务尚未注册。")
+            if flow.get("figure_enabled") and self.figure:
+                figure = self.figure.import_table({"project_id": project["id"], "pipeline_id": flow["id"]})
+                flow.update(figure_id=figure["id"], stage="figure", retry=True)
+                self.update(flow, "running", "表格复核已通过，论文副本已交接 Auto Figure；请打开绘图页面确认三张参考图。")
+                self.save(flow)
+                return
             self.update(
                 flow,
                 "completed",
@@ -472,3 +498,32 @@ class PipelineManager:
             self.save(flow)
         else:
             self.update(flow, "blocked", project.get("error") or project["message"])
+
+    def advance_figure(self, flow: dict) -> None:
+        project = self.figure.load(flow["figure_id"])
+        if not self.figure.source_current(project):
+            if project["id"] in self.figure.jobs:
+                self.figure.stop(project["id"])
+                self.update(flow, "running", "上游论文变化，正在停止旧版本主图任务。")
+                return
+            self.figure.invalidate(project["id"])
+            flow.update(figure_id=None, stage="table", retry=True)
+            self.update(flow, "running", "旧主图已失效，重新核对 AutoTable 论文版本。")
+            self.save(flow)
+        elif project['status'] == 'awaiting_references':
+            self.update(flow, 'waiting_review', '请打开 Auto Figure 确认三张参考图，确认后继续 FigureCrafter 绘图。')
+        elif project['status'] == 'idle' and project.get('references_confirmed'):
+            self.figure.start(project['id'])
+            flow['retry'] = False
+            self.update(flow, 'running', '参考图已确认，FigureCrafter 正在生成主图。')
+        elif project["status"] == "ready":
+            self.update(flow, "completed", "方法主图已插入论文，最终 PDF 通过复核；可在 Auto Figure 下载 PPTX、独立主图 PDF、论文源码与完整论文 PDF。")
+        elif project["status"] == "running" or project["id"] in self.figure.jobs:
+            flow["retry"] = False
+            self.update(flow, "running", project["message"])
+        elif flow.pop("retry", False):
+            self.figure.start(project["id"], {"revise": project["status"] == "needs_revision",
+                                              "feedback": flow.get("recovery_note", "")})
+            self.save(flow)
+        else:
+            self.update(flow, "blocked", project["message"])

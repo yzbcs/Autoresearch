@@ -207,11 +207,12 @@ class GenerateIdeaTests(unittest.TestCase):
         self.assertIn("Distinguish output dependence from semantic correctness", prompt)
         self.assertIn("may not supervise or validate itself", prompt)
         self.assertIn("Do not require any new annotation", prompt)
-        self.assertIn("return PASS now", prompt)
+        self.assertIn("Return PASS when", prompt)
         self.assertIn("currently confirmed evidence", prompt)
         self.assertIn("# PASS:", prompt)
         self.assertIn("Datasets and Benchmark", prompt)
-        self.assertIn("at least three distinct public benchmarks", prompt)
+        self.assertIn("one or more named public benchmarks", prompt)
+        self.assertIn("fewer than three benchmarks", prompt)
         self.assertIn("at least two distinct downstream task types", prompt)
         self.assertIn("official-primary-url", prompt)
         self.assertIn("Complete Implementation Process", prompt)
@@ -299,12 +300,18 @@ class GenerateIdeaTests(unittest.TestCase):
                 VALID_MARKDOWN.replace("**Mapped Contributions:**", "**Evaluation Mapping:**", 1)
             )
 
-    def test_validate_markdown_requires_three_linked_benchmarks(self) -> None:
-        start = VALID_MARKDOWN.index("#### Benchmark (3):")
+    def test_validate_markdown_requires_at_least_one_linked_benchmark(self) -> None:
+        start = VALID_MARKDOWN.index("#### Benchmark (1):")
         end = VALID_MARKDOWN.index("**Downstream Tasks:**")
         invalid = VALID_MARKDOWN[:start] + VALID_MARKDOWN[end:]
-        with self.assertRaisesRegex(ValueError, "at least three linked benchmark cards"):
+        with self.assertRaisesRegex(ValueError, "at least one linked benchmark card"):
             generate_idea.validate_markdown(invalid)
+
+    def test_validate_markdown_accepts_one_linked_benchmark(self) -> None:
+        start = VALID_MARKDOWN.index("#### Benchmark (2):")
+        end = VALID_MARKDOWN.index("**Downstream Tasks:**")
+        one_benchmark = VALID_MARKDOWN[:start] + VALID_MARKDOWN[end:]
+        generate_idea.validate_markdown(one_benchmark)
 
     def test_validate_markdown_requires_distinct_benchmark_links(self) -> None:
         invalid = VALID_MARKDOWN.replace(
@@ -399,6 +406,8 @@ class GenerateIdeaTests(unittest.TestCase):
                 result = generate_idea.run_codex("prompt", model=None, timeout=30)
         self.assertEqual(result, VALID_MARKDOWN)
         self.assertEqual(commands[0][1], "--search")
+        model_index = commands[0].index("--model") + 1
+        self.assertEqual(commands[0][model_index], generate_idea.DEFAULT_CODEX_MODEL)
 
     def test_run_codex_repairs_invalid_markdown(self) -> None:
         commands: list[list[str]] = []

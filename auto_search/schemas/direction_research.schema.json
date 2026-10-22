@@ -7,7 +7,7 @@
     "scope_summary": {"type": "string", "minLength": 1},
     "papers": {
       "type": "array",
-      "minItems": 2,
+      "minItems": 1,
       "maxItems": 6,
       "items": {
         "type": "object",

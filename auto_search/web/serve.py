@@ -14,7 +14,7 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
-from urllib.parse import unquote, urlparse
+from urllib.parse import quote, unquote, urlparse
 
 WEB_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = WEB_ROOT.parent
@@ -39,6 +39,7 @@ MAX_REQUEST_BYTES = 64 * 1024
 DIRECTION_RUN_RE = re.compile(r"(?:direction-\d{8}-\d{6}-[a-f0-9]{6}|" + name_pattern("search") + ")")
 READABLE_RUNS = {"medical-vlm-10"}
 HUMAN_REVIEW_VALUES = {"approved", "discarded"}
+CODEX_MODEL = direction_research.generate_idea.DEFAULT_CODEX_MODEL
 
 
 def utc_now() -> str:
@@ -274,6 +275,7 @@ class JobManager:
                     manifest = direction_research.execute_research_agent(
                         job.direction,
                         job.paper_count,
+                        model=CODEX_MODEL,
                         timeout=job.timeout,
                         cancel_event=job.cancel_event,
                         process_callback=job.register_process,
@@ -300,7 +302,7 @@ class JobManager:
                 portfolio = research_pipeline.generate_portfolio(
                     manifest,
                     job.run_dir,
-                    model=None,
+                    model=CODEX_MODEL,
                     timeout=job.timeout,
                     force=False,
                     progress_callback=generation_progress,
@@ -312,7 +314,7 @@ class JobManager:
                     research_pipeline.evaluate_portfolio(
                         portfolio,
                         job.run_dir,
-                        model=None,
+                        model=CODEX_MODEL,
                         timeout=job.timeout,
                         force=False,
                         cancel_event=job.cancel_event,
@@ -501,10 +503,30 @@ class AppHandler(SimpleHTTPRequestHandler):
                 cli = str(direction_research.generate_idea.resolve_codex_cli())
             except RuntimeError:
                 cli = None
-            self.send_json({"status": "ok", "codex_cli": cli})
+            self.send_json({"status": "ok", "codex_cli": cli, "model": CODEX_MODEL})
             return
         if path == "/api/runs":
             self.send_json({"runs": list_run_summaries()})
+            return
+        match = re.fullmatch(r"/api/runs/([^/]+)/ideas/([a-z0-9_]+)/download", path)
+        if match:
+            try:
+                run_dir = safe_run_directory(match.group(1))
+                idea_id = match.group(2)
+                idea_path = (run_dir / "papers" / idea_id / "idea.md").resolve()
+                if not idea_path.is_relative_to(run_dir):
+                    raise ValueError("Idea file is outside the research folder.")
+                payload = idea_path.read_bytes()
+            except (ValueError, OSError):
+                self.send_api_error("Idea Markdown file not found.", HTTPStatus.NOT_FOUND)
+                return
+            filename = quote(f"{run_dir.name}-{idea_id}.md", safe="")
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-Type", "text/markdown; charset=utf-8")
+            self.send_header("Content-Disposition", f"attachment; filename=\"{idea_id}.md\"; filename*=UTF-8''{filename}")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
             return
         match = re.fullmatch(r"/api/jobs/([a-f0-9]{12})", path)
         if match:

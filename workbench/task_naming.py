@@ -11,7 +11,7 @@ def name_pattern(kind: str) -> str:
 
 
 def create_task_directory(root: Path, title: str, kind: str) -> Path:
-    if kind not in {"design", "writing", "search", "table"}:
+    if kind not in {"design", "writing", "search", "table", "figure"}:
         raise ValueError("Unknown task kind")
     title = re.sub(r"[^\w-]+", "-", title.strip()).strip("-_")[:60].rstrip("-_")
     title = title.encode("utf-8")[:180].decode("utf-8", errors="ignore").rstrip("-_")

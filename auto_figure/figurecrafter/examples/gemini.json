@@ -1,0 +1,7 @@
+{
+  "provider": "gemini",
+  "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/YOUR-MODEL:generateContent",
+  "model": "YOUR-MODEL",
+  "api_key_env": "GEMINI_API_KEY",
+  "request_options": {"generationConfig": {"maxOutputTokens": 16384}}
+}

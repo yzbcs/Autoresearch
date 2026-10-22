@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+here="$(cd -- "$(dirname -- "$0")" && pwd)"
+root="$(cd -- "$here/../.." && pwd)"
+export LD_PRELOAD="$here/libfc_lo_tmp.so${LD_PRELOAD:+:$LD_PRELOAD}"
+export FIGURECRAFTER_IPC_DIR="$root/.cache/fc-ipc"
+mkdir -p -- "$FIGURECRAFTER_IPC_DIR"
+exec "${FIGURECRAFTER_SOFFICE_REAL:-/usr/bin/soffice}" "$@"

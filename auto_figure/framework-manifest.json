@@ -1,0 +1,30 @@
+{
+  "framework": "FigureCrafter",
+  "version": "2.5.1",
+  "files": {
+    "run.py": "0b58dea1c26c152ece5ad8fb3e229cbaeea9b57f37000ba947683bfd7e12d5dc",
+    "requirements.txt": "d6d308cde5b0432f2f98acb1375c6e2ce445da889325191deb4a6cce4b756299",
+    "requirements.lock.txt": "63164b3308b5731d8af10de1b166f975da1c48b8fab76cb0ed2f66caafb200a0",
+    "README.rst": "2006493d631e20815c1b8008a7d77356677d2467e3cc05b804228740b8dbc635",
+    "harness/standalone.py": "32f5209f487253ddce07794a52950e91ec8392a28932cf018e23917c483b1b9c",
+    "harness/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "harness/providers.py": "ed6f57fcea59bb818a12b55af26cec26e954a0e153a98d6d15fb37e77ba849f3",
+    "harness/model_led_drawing.py": "5d66ec661870c85edc78a6a0c08140a9d66e37aec33801439166af5c3b5f8f9e",
+    "guides/STYLE_LEARNING.zh-CN.md": "584579572ab015d92a47009e2359764a2397447032807b049d7c0045dd6d8877",
+    "guides/OBJECT_COMPOSITION.zh-CN.md": "4a0a513d1307b2b87b3d9fe05a65c5e370bbf27e581d3ef1840b52c1624c21a4",
+    "guides/REFERENCE_JOINT_LEARNING.zh-CN.md": "406c359bbcce00037602ac1338ec64aa77a24aefda786406ad71938dad9373b2",
+    "guides/MODEL_LED_DRAWING.zh-CN.md": "4155491e436b583872e832a4e59c75f6913aa32e1ddbe3c78ef81a388ec20ac0",
+    "scripts/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scripts/pptx_object_evidence.py": "f5deaca8d1f8a7a68017cf7aae881725ad0493db657bdbdb13c226a97620565b",
+    "protocol/model.txt": "784391e4590ed3f7c785006cf90dc0b95d4c46f9d6653ef17ffa9aab5704eaef",
+    "examples/openai-compatible.json": "7e5956e69ded5f232c14ec70e0eca5a8ebf114088a8832e2b1320ab7f3d41d4a",
+    "examples/gemini.json": "2f1ecf300c0c50d2d1d4fca545fa9cde2762cd243d2f8e91fbade5c6efcc00c5",
+    "provenance/adaptations.json": "14e75f24867281d46675cc29c4b22aa66af0a4edb3800936600e25fea4de9327",
+    "provenance/source.json": "f016fe9f988e44890639f134e854d9f099631b609d5edbdf8445ff1da3b8da5d",
+    "provenance/package-files.json": "d65f4ddc8a1e992a46f7fe8d6a5ee0f0d63ed85204e2a2efe7668c7fd9602da3",
+    "provenance/standalone-source-manifest.json": "a8ae941d05c644466065e5394952f4b7e88dba00038b3d02ba35b509af31a407",
+    "provenance/protected-files-before.json": "82d11ef35fede5201d252328df9e00fdd947c43b761172cec82f8251231ec8cc",
+    "tests/test_original_executor.py": "bb647790391c1b6a6ee556157072f68b10668e47bd07b6fb1e60c2033001deab",
+    "tests/test_standalone.py": "3c4c27337883ddbd6d0748916bb37b85b94099f5472dc0f64261e52367a0d29d"
+  }
+}

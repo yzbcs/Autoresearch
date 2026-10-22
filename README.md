@@ -1,8 +1,8 @@
 # AutoResearch
 
-AutoResearch 将 **Auto Search、Auto Design、Auto Writing、Auto Table** 整合到一个网页入口，支持从调研自动交接到实验和论文，同时保留各模块的独立任务。首页可管理全流程、恢复失败步骤并重启研究服务。
+AutoResearch 将 **Auto Search、Auto Design、Auto Writing、Auto Table、Auto Figure** 整合到一个网页入口，支持从调研自动交接到实验和论文，同时保留各模块的独立任务。首页可管理全流程、恢复失败步骤并重启研究服务。
 
-## 四模块工作台
+## 五模块工作台
 
 在仓库根目录运行（Python 3.11+）：
 
@@ -18,10 +18,11 @@ python3 -m workbench --port 8760
 | Auto Design | [/auto-design/](http://127.0.0.1:8760/auto-design/) | 实验设计、R0、执行、暂停恢复、结果诊断与审计 |
 | Auto Writing | [/auto-writing/](http://127.0.0.1:8760/auto-writing/) | 文献调研、六章节写作、参考文献、LaTeX 与 PDF |
 | Auto Table | [/auto-table/](http://127.0.0.1:8760/auto-table/) | 论文表格整理、实验数据制表、PDF 编译与独立复核 |
+| Auto Figure | [/auto-figure/](http://127.0.0.1:8760/auto-figure/) | 方法主图 SVG、局部插入论文、最终 PDF 与复核 |
 
 首页点击“新建全流程”可从研究方向开始，或接续已有调研、实验、写作任务。选题、方法审批、暂停、错误日志、局部重试和模板更换均可在网页处理。设计与恢复边界见 [全流程说明](docs/frontend_workflow.md)。
 
-Auto Table 支持上传论文 ZIP、上传结构化实验结果，或接续 Auto Writing 已生成的论文。保持原始数值、方法名与来源，提供模板规划、失败恢复、表格源码和 PDF 下载。完整说明见 [Auto Table](auto_table/README.md)。首页全流程自动执行 Auto Search → Auto Design → Auto Writing → Auto Table，最后以表格编译与复核通过作为交付完成条件；四个模块也可独立启动。
+Auto Table 支持上传论文 ZIP、上传结构化实验结果，或接续 Auto Writing 已生成的论文。保持原始数值、方法名与来源，提供模板规划、失败恢复、表格源码和 PDF 下载。完整说明见 [Auto Table](auto_table/README.md)。新建全流程自动执行 Auto Search → Auto Design → Auto Writing → Auto Table → Auto Figure，最后以方法主图插入、论文编译与复核通过作为交付完成条件；五个模块也可独立启动。历史流程保留原完成语义。AutoFigure 复用已通过复核的 AutoTable 论文副本，保留表格和正文，交付 SVG、LaTeX ZIP 与含图 PDF。绘图依赖与配置见 [Auto Figure](auto_figure/README.md)。
 
 任务数据默认保存在 `assets/output/workbench/`。启动或切换页面不会自动启动研究任务。完整启动参数、功能范围和验收记录见 [工作台说明](workbench/README.md) 与 [开发记录](docs/README.md)。
 

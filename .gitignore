@@ -41,3 +41,13 @@ node_modules/
 .wrangler/
 *.tsbuildinfo
 next-env.d.ts
+
+# Auto Figure isolated environment, tools, caches and runtime artifacts.
+.venv-autofigure/
+.tools/
+assets/tmp/auto_figure/
+assets/output/auto_figure/
+assets/logs/auto_figure/
+
+.venv-figurecrafter/
+auto_figure/tools/*.so

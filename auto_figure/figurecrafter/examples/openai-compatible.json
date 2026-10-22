@@ -1,0 +1,8 @@
+{
+  "provider": "openai-compatible",
+  "endpoint": "https://YOUR-PROVIDER/v1/chat/completions",
+  "model": "YOUR-ACTUAL-VISION-AND-TOOL-MODEL-ID",
+  "api_key_env": "MODEL_API_KEY",
+  "request_options": {},
+  "timeout_seconds": 180
+}

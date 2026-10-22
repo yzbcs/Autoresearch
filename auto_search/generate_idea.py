@@ -19,6 +19,11 @@ ROOT = Path(__file__).resolve().parent
 PROMPT_PATH = ROOT / "prompt.md"
 DEFAULT_OUTPUT_DIR = ROOT / "ideas"
 MAX_GENERATION_ATTEMPTS = 3
+DEFAULT_CODEX_MODEL = (
+    os.environ.get("AUTO_SEARCH_CODEX_MODEL", "").strip()
+    or os.environ.get("CODEX_MODEL", "").strip()
+    or "gpt-6-astra"
+)
 
 
 class ProcessCancelledError(RuntimeError):
@@ -171,9 +176,7 @@ def render_prompt(weakness: str, language: str) -> str:
 def build_codex_command(
     codex_cli: Path, raw_output: Path, model: str | None, workspace: Path | None = None
 ) -> list[str]:
-    command = [str(codex_cli)]
-    if model:
-        command.extend(["--model", model])
+    command = [str(codex_cli), "--model", model or DEFAULT_CODEX_MODEL]
     if reasoning_effort := os.environ.get("CODEX_REASONING_EFFORT"):
         command.extend(["--config", f'model_reasoning_effort="{reasoning_effort}"'])
     command.extend(
@@ -308,8 +311,8 @@ def validate_dataset_benchmark_section(body: str, language: str) -> None:
     if not datasets and no_datasets not in body[dataset_group_position:benchmark_group_position]:
         raise ValueError("Datasets and Benchmark must list construction datasets or state that none are used.")
 
-    if len(benchmarks) < 3:
-        raise ValueError("Datasets and Benchmark must contain at least three linked benchmark cards.")
+    if not benchmarks:
+        raise ValueError("Datasets and Benchmark must contain at least one linked benchmark card.")
     for number, _name, _url, card_body in benchmarks:
         heading_position = body.find(f"#### Benchmark ({number})")
         if not benchmark_group_position < heading_position < downstream_position:

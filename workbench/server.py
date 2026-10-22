@@ -13,6 +13,8 @@ from urllib.parse import urlsplit, urlunsplit
 
 from auto_design.orchestration import TaskManager
 from auto_design.web.serve import create_server as create_design_server
+from auto_figure.application import Application as FigureApplication
+from auto_figure.web.serve import create_server as create_figure_server
 from auto_search.web import serve as search
 from auto_table.application import Application as TableApplication
 from auto_table.web.serve import create_server as create_table_server
@@ -21,7 +23,7 @@ from auto_writing.web import serve as writing
 from .pipeline import PipelineManager
 
 WEB_ROOT = Path(__file__).resolve().parent / "web"
-MODULES = ("auto-search", "auto-design", "auto-writing", "auto-table")
+MODULES = ("auto-search", "auto-design", "auto-writing", "auto-table", "auto-figure")
 MAX_REQUEST_BYTES = writing.MAX_REQUEST_BYTES
 HOP_HEADERS = {"connection", "transfer-encoding", "keep-alive", "upgrade"}
 
@@ -198,8 +200,9 @@ class Workbench:
         writing.migrate_existing_research_references()
         self.design = TaskManager(self.data_dir / "auto_design")
         self.table = TableApplication(self.workspace, self.data_dir / "auto_table")
+        self.figure = FigureApplication(self.workspace, self.data_dir / "auto_figure", table=self.table)
         self.pipeline = PipelineManager(
-            self.data_dir / "pipelines", self.workspace, self.design, self.table
+            self.data_dir / "pipelines", self.workspace, self.design, self.table, self.figure
         )
         try:
             self.modules["auto-search"] = ThreadingHTTPServer(
@@ -212,6 +215,7 @@ class Workbench:
                 ("127.0.0.1", 0), partial(writing.AppHandler, directory=str(writing.WEB_ROOT))
             )
             self.modules["auto-table"] = create_table_server("127.0.0.1", 0, self.table)
+            self.modules["auto-figure"] = create_figure_server("127.0.0.1", 0, self.figure)
             self.server = ThreadingHTTPServer(
                 (host, port), partial(WorkbenchHandler, modules=self.modules, workbench=self)
             )
@@ -229,6 +233,7 @@ class Workbench:
 
     def close(self) -> None:
         self.pipeline.close()
+        self.figure.close()
         self.table.close()
         self.server.server_close()
         for server in self.modules.values():
@@ -254,17 +259,21 @@ class Workbench:
             ]
         with self.table.lock:
             table_jobs = list(self.table.jobs)
+        with self.figure.lock:
+            figure_jobs = list(self.figure.jobs)
         return {
             "status": "ok",
             "active_searches": [j["id"] for j in searches],
             "active_designs": design_jobs,
             "active_writing": writing_jobs,
             "active_tables": table_jobs,
-            "idle": not (searches or design_jobs or writing_jobs or table_jobs),
+            "active_figures": figure_jobs,
+            "idle": not (searches or design_jobs or writing_jobs or table_jobs or figure_jobs),
         }
 
     def prepare_restart(self) -> None:
         self.pipeline.close()
+        self.figure.close()
         self.table.close()
         with self.pipeline.lock:
             for flow in self.pipeline.flows.values():

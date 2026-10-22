@@ -31,6 +31,8 @@ The user may also supply a benchmark, an initial experiment plan, preferred base
 
 ## Locate the run
 
+Different projects may run their controllers concurrently. This does not grant exclusive access to GPUs or shared resources: before launching experiments, inspect current usage and obey this task’s GPU selection, concurrency and remaining-budget constraints. Do not stop another project’s processes.
+
 Use the selected project workspace and runtime paths injected by the Python service. All workers and tools ship inside auto_design/. No installed Skills are needed. Put inputs, logs and outputs below assets/ and documentation below docs/.
 
 When resuming the same Idea and run, read these first when present:

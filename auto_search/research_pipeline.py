@@ -42,8 +42,8 @@ def load_manifest(path: Path) -> dict[str, Any]:
     if not isinstance(manifest, dict) or not isinstance(manifest.get("search"), dict):
         raise ValueError("Manifest must contain a search object.")
     papers = manifest.get("papers")
-    if not isinstance(papers, list) or len(papers) < 2:
-        raise ValueError("Manifest must contain at least two papers.")
+    if not isinstance(papers, list) or not papers:
+        raise ValueError("Manifest must contain at least one paper.")
     ids: list[str] = []
     required = {
         "id",
@@ -401,27 +401,52 @@ def evaluate_portfolio(
         for entry in portfolio
         if generate_idea.is_pass_markdown(entry["idea_markdown"])
     }
+    repair_context = ""
     should_evaluate = force or not json_path.is_file()
     if not should_evaluate:
-        response = json.loads(json_path.read_text(encoding="utf-8"))
         try:
+            response = json.loads(json_path.read_text(encoding="utf-8"))
             validate_evaluation(response, expected_ids, pass_document_ids)
         except ValueError as error:
             print(f"stale evaluation ({error}); reevaluating", flush=True)
+            repair_context = f"\nPrevious invalid output:\n{json_path.read_text(encoding='utf-8')}\nValidation error: {error}\n"
             should_evaluate = True
     if should_evaluate:
-        prompt = render_evaluation_prompt(portfolio)
-        response = execute_json_agent(
-            prompt,
-            EVALUATION_SCHEMA_PATH,
-            model,
-            timeout,
-            cancel_event=cancel_event,
-            process_callback=process_callback,
-            workspace=run_dir,
-        )
+        schema = json.loads(EVALUATION_SCHEMA_PATH.read_text(encoding="utf-8"))
+        schema["properties"]["ranking"]["items"]["enum"] = expected_ids
+        schema["properties"]["evaluations"]["items"]["properties"]["paper_id"]["enum"] = expected_ids
+        schema_path = run_dir / "evaluation.schema.json"
+        write_json_atomic(schema_path, schema)
+        base_prompt = render_evaluation_prompt(portfolio)
+        for attempt in range(3):
+            if cancel_event is not None and cancel_event.is_set():
+                raise RuntimeError("Evaluation cancelled.")
+            prompt = (base_prompt + repair_context
+                      + "\nAllowed paper IDs (use exactly, each once in ranking): "
+                      + json.dumps(expected_ids, ensure_ascii=False)
+                      + "\nCorrect any validation errors and return the complete evaluation JSON.\n")
+            generate_idea.write_text_atomic(prompt_path, prompt, force=True)
+            response = None
+            try:
+                response = execute_json_agent(
+                    prompt, schema_path, model, timeout,
+                    cancel_event=cancel_event, process_callback=process_callback,
+                    workspace=run_dir,
+                )
+                validate_evaluation(response, expected_ids, pass_document_ids)
+            except ValueError as error:
+                invalid = response
+                with (run_dir / "evaluation.repair.jsonl").open("a", encoding="utf-8") as log:
+                    log.write(json.dumps({"attempt": attempt + 1, "error": str(error),
+                                          "response": invalid}, ensure_ascii=False) + "\n")
+                if attempt == 2:
+                    raise ValueError(f"Evaluation invalid after 3 attempts: {error}") from error
+                repair_context = ("\nPrevious invalid output:\n" + json.dumps(invalid, ensure_ascii=False)
+                                  + f"\nValidation error: {error}\n")
+                print(f"evaluation validation failed; repairing ({attempt + 1}/2): {error}", flush=True)
+            else:
+                break
         write_json_atomic(json_path, response)
-        generate_idea.write_text_atomic(prompt_path, prompt, force=True)
     validate_evaluation(response, expected_ids, pass_document_ids)
     markdown = render_evaluation_markdown(
         response,
