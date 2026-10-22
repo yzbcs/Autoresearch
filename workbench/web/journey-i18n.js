@@ -195,11 +195,8 @@
       return `${t(match[1])}, ${t(match[2])}`;
     return text;
   }
-  function localize() {
-    const walker = document.createTreeWalker(
-      document.body,
-      NodeFilter.SHOW_TEXT,
-    );
+  function localize(root = document.body) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     while (walker.nextNode()) {
       const node = walker.currentNode,
         parent = node.parentElement;
@@ -218,9 +215,10 @@
       original.set(node, record);
       if (raw !== result) node.textContent = result;
     }
-    for (const element of document.querySelectorAll(
-      "[placeholder],[aria-label],[title]",
-    )) {
+    for (const element of [
+      root,
+      ...root.querySelectorAll("[placeholder],[aria-label],[title]"),
+    ]) {
       if (element.closest("[data-user-content]") || element.tagName === "TITLE")
         continue;
       let record = original.get(element) || {};
@@ -254,18 +252,5 @@
   document
     .querySelector("#language")
     .addEventListener("change", (e) => applyLanguage(e.target.value));
-  let scheduled = false;
-  new MutationObserver(() => {
-    if (scheduled) return;
-    scheduled = true;
-    queueMicrotask(() => {
-      scheduled = false;
-      localize();
-    });
-  }).observe(document.body, {
-    childList: true,
-    subtree: true,
-    characterData: true,
-  });
   applyLanguage(locale);
 })();

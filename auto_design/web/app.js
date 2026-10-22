@@ -31,6 +31,7 @@ function renderList() {
   $("#task-count").textContent = `${state.tasks.length} 个实验任务`;
   const buttons = state.tasks.map((task) => {
     const button = element("button", undefined, "task-item" + (task.id === state.activeId ? " selected" : ""));
+    button.dataset.deleteTask = task.id;
     const label = element("span", undefined, "task-label");
     label.append(element("strong", task.title), element("small", `${labels[task.status] || task.status} · ${new Date(task.created_at).toLocaleDateString("zh-CN")}`));
     button.append(icon("folder"), label);

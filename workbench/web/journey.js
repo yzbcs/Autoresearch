@@ -81,6 +81,7 @@
     const focused =
       document.activeElement?.closest("[data-event]")?.dataset.event;
     element.innerHTML = html;
+    window.JourneyI18n.localize(element);
     rendered.set(selector, html);
     element.scrollLeft = scroll;
     if (selector === "#timeline" && focused)
@@ -112,6 +113,7 @@
   function notice(text = "") {
     $("#notice").hidden = !text;
     $("#notice").textContent = text;
+    window.JourneyI18n.localize($("#notice"));
   }
   async function api(path, payload) {
     const response = await fetch(path, {
@@ -168,6 +170,9 @@
       .join("");
   }
   function renderGraph() {
+    const key = JSON.stringify([data.nodes, data.edges, selectedNode]);
+    if (key === graphKey) return;
+    graphKey = key;
     const nodes = new Map(data.nodes.map((n) => [n.id, n]));
     const marker =
       '<defs><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7" fill="#89aaa3"/></marker><marker id="amber-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7" fill="#d89422"/></marker></defs>';
@@ -204,9 +209,7 @@
         return `<g class="route-node ${escape(n.status)} ${selectedNode === n.id ? "selected" : ""}" transform="translate(${n.x},${n.y})" data-node="${escape(n.id)}" role="button" tabindex="0" aria-label="${escape(t(n.title))}，${escape(t(subtitle))}" aria-pressed="${selectedNode === n.id}"><title>${escape(t(n.title))}：${escape(t(n.summary))}</title><rect width="140" height="72" rx="9"/><text class="node-symbol" x="12" y="37">${symbols[n.id] || "♧"}</text><text class="node-title" x="37" y="29" ${t(n.title).length > 13 ? 'textLength="92" lengthAdjust="spacingAndGlyphs"' : ""}>${escape(t(n.title))}</text><text class="node-subtitle" x="37" y="49" ${t(subtitle).length > 15 ? 'textLength="92" lengthAdjust="spacingAndGlyphs"' : ""}>${escape(t(subtitle))}</text>${n.status === "running" ? '<circle class="running-dot" cx="126" cy="13" r="4"/>' : ""}</g>`;
       })
       .join("");
-    const key = JSON.stringify([data.nodes, data.edges, selectedNode]);
-    if (key === graphKey) return;
-    graphKey = key;
+
     const fresh = graphFlow !== data.flow.id;
     const focused = document.activeElement?.getAttribute("data-node");
     if (!camera) {
@@ -240,7 +243,9 @@
       $("#route-map")
         .querySelector(`[data-node="${CSS.escape(focused)}"]`)
         ?.focus({ preventScroll: true });
+    buildOverview();
     updateOverview();
+    window.JourneyI18n.localize($("#route-content"));
   }
   function renderNode() {
     const n = data.nodes.find((n) => n.id === selectedNode);
@@ -282,6 +287,7 @@
         .join(""),
     );
     const event = events.find((e) => eventKey(e) === selectedEvent);
+    window.JourneyI18n.localize($("#timeline"));
     $("#event-detail").textContent = event
       ? `${date(event.at)} · ${t(event.source === "pipeline" ? "流程记录" : "模块记录")} · ${event.message}`
       : "";
@@ -320,14 +326,16 @@
     renderNode();
     renderTimeline();
     notice(data.warnings.join("；"));
+    window.JourneyI18n.localize();
   }
   async function loadDetail() {
     const id = selected,
       number = ++requestNumber;
     const value = await api(`/api/pipelines/${encodeURIComponent(id)}/journey`);
     if (id !== selected || number !== requestNumber) return;
+    const changed = JSON.stringify(value) !== JSON.stringify(data);
     data = value;
-    render();
+    if (changed) render();
     $("#refresh-time").textContent =
       `已同步 ${new Date().toLocaleTimeString(window.JourneyI18n.locale, { hour12: false })}`;
   }
@@ -365,7 +373,8 @@
   }
   async function poll() {
     await refresh();
-    setTimeout(poll, 4000);
+    window.JourneyI18n.localize();
+    setTimeout(poll, data?.flow.status === "running" ? 4000 : 10000);
   }
   function selectNode(id, locate = true) {
     selectedNode = id;
@@ -393,6 +402,17 @@
       scale = size.realZoom;
     if (!scale) return;
     $("#zoom-level").value = `${Math.round(scale * 100)}%`;
+    const windowRect = $("#minimap .mini-window");
+    if (windowRect)
+      for (const [key, value] of Object.entries({
+        x: -pan.x / scale,
+        y: -pan.y / scale,
+        width: size.width / scale,
+        height: size.height / scale,
+      }))
+        windowRect.setAttribute(key, String(value));
+  }
+  function buildOverview() {
     const nodes = new Map(data.nodes.map((n) => [n.id, n]));
     $("#minimap").innerHTML =
       data.edges
@@ -410,8 +430,9 @@
             `<rect class="mini-node ${escape(n.status)}" x="${n.x}" y="${n.y}" width="140" height="72" rx="8"/>`,
         )
         .join("") +
-      `<rect class="mini-window" x="${-pan.x / scale}" y="${-pan.y / scale}" width="${size.width / scale}" height="${size.height / scale}"/>`;
+      '<rect class="mini-window"/>';
   }
+
   function toggleSidebar(open) {
     $("#journey-sidebar").inert =
       matchMedia("(max-width:760px)").matches && !open;
@@ -496,6 +517,7 @@
     live = !live;
     $("#live-toggle").setAttribute("aria-pressed", String(live));
     $("#connection").textContent = live ? "正在同步" : "已暂停页面同步";
+    window.JourneyI18n.localize($(".connection"));
     if (live) refresh();
   });
   $("#zoom-in").onclick = () => camera?.zoomIn();
