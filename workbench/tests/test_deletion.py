@@ -13,7 +13,6 @@ from workbench.tests.test_workbench import json_request, new_writing, request
 
 @pytest.fixture
 def app(tmp_path, monkeypatch):
-    monkeypatch.setenv("WORKBENCH_DELETE_PASSPHRASE", "工程验收口令")
     from workbench.delete_auth import _failures
     _failures.clear()
     yield from workbench_app.__wrapped__(tmp_path, monkeypatch)
@@ -29,7 +28,7 @@ def design(app):
 
 
 def erase(app, module, identity, status=200):
-    return json_request(app, f"/api/items/{module}/{identity}", value={"passphrase": "工程验收口令"}, method="DELETE", status=status)
+    return json_request(app, f"/api/items/{module}/{identity}", value={"passphrase": "DEL"}, method="DELETE", status=status)
 
 
 def test_design_deletion_removes_owned_files_and_index_but_keeps_workspace(app):
@@ -71,7 +70,7 @@ def test_all_module_files_removed_through_native_and_shared_routes(app):
         ("table", table["id"], f"/auto-table/api/projects/{table['id']}"),
         ("figure", figure["id"], f"/auto-figure/api/projects/{figure['id']}"),
     ]:
-        assert json_request(app, url, value={"passphrase": "工程验收口令"}, method="DELETE")["deleted"]
+        assert json_request(app, url, value={"passphrase": "DEL"}, method="DELETE")["deleted"]
     assert not search.exists()
     assert not (app.data_dir / "auto_writing" / writing["id"]).exists()
     assert not app.table.directory(table["id"]).exists()
@@ -197,18 +196,20 @@ def test_delete_requires_passphrase_and_preserves_files(app, monkeypatch):
         assert json_request(app, route, {"passphrase": "wrong"}, method="DELETE", status=403)
         assert Path(task["run_dir"]).exists()
         assert task["id"] in app.design.tasks
-    monkeypatch.delenv("WORKBENCH_DELETE_PASSPHRASE")
-    assert json_request(app, url, {"passphrase": "工程验收口令"}, method="DELETE", status=403)
-    assert Path(task["run_dir"]).exists()
+    for value in ("del", " DEL", "DEL ", ""):
+        with pytest.raises(PermissionError):
+            from workbench.delete_auth import verify
+            verify(value, "case-" + value)
+    assert json_request(app, url, {"passphrase": "DEL"}, method="DELETE")["deleted"]
+    assert not Path(task["run_dir"]).exists()
 
 
 def test_delete_passphrase_rate_limit(monkeypatch):
     from workbench.delete_auth import verify, _failures
     _failures.clear()
-    monkeypatch.setenv("WORKBENCH_DELETE_PASSPHRASE", "fixture")
     for _ in range(5):
         with pytest.raises(PermissionError, match="口令错误"):
             verify("wrong", "fixture-client")
     with pytest.raises(PermissionError, match="次数过多"):
-        verify("fixture", "fixture-client")
-    verify("fixture", "another-client")
+        verify("DEL", "fixture-client")
+    verify("DEL", "another-client")
