@@ -16,6 +16,47 @@
   const english = () => document.documentElement.lang === "en";
   let busy = false,
     scheduled = false;
+  function askPassphrase(title, scope) {
+    return new Promise((resolve) => {
+      const dialog = document.createElement("dialog");
+      dialog.className = "delete-passphrase-dialog";
+      const form = document.createElement("form");
+      form.method = "dialog";
+      const heading = document.createElement("h2");
+      heading.textContent = english() ? "Confirm deletion" : "验证删除口令";
+      const description = document.createElement("p");
+      description.textContent = `${title}\n${scope}`;
+      const label = document.createElement("label");
+      label.textContent = english() ? "Deletion passphrase" : "删除口令";
+      const input = document.createElement("input");
+      input.type = "password";
+      input.autocomplete = "off";
+      input.required = true;
+      input.maxLength = 1024;
+      label.append(input);
+      const warning = document.createElement("p");
+      warning.textContent = english() ? "Associated server files will be permanently deleted. Stop tasks first." : "将永久删除服务器上的关联文件，请先暂停任务。";
+      const cancel = document.createElement("button");
+      cancel.type = "button";
+      cancel.textContent = english() ? "Cancel" : "取消";
+      cancel.addEventListener("click", () => dialog.close());
+      const submit = document.createElement("button");
+      submit.type = "submit";
+      submit.textContent = english() ? "Verify and delete" : "验证并删除";
+      form.append(heading, description, label, warning, cancel, submit);
+      let value = null;
+      form.addEventListener("submit", () => { value = input.value; });
+      dialog.addEventListener("close", () => {
+        input.value = "";
+        dialog.remove();
+        resolve(value);
+      }, {once: true});
+      dialog.append(form);
+      document.body.append(dialog);
+      dialog.showModal();
+      input.focus();
+    });
+  }
   function decorate() {
     for (const row of document.querySelectorAll(definition[0])) {
       if (row.parentElement.classList.contains("list-delete-row")) continue;
@@ -43,18 +84,14 @@
             : english()
               ? "Delete this task and its input, output and log files?"
               : "删除此任务及其输入、产物和日志文件？";
-        if (
-          !confirm(
-            `${title}\n\n${scope}\n${english() ? "This cannot be undone. Stop running tasks first." : "删除后无法恢复，运行中的任务请先暂停。"}`,
-          )
-        )
-          return;
         busy = true;
+        let passphrase = await askPassphrase(title, scope);
+        if (passphrase === null) { busy = false; return; }
         button.disabled = true;
         try {
           const response = await fetch(
             `/api/items/${module}/${encodeURIComponent(row.dataset[definition[1]])}`,
-            { method: "DELETE" },
+            { method: "DELETE", headers: {"Content-Type": "application/json"}, body: JSON.stringify({passphrase}) },
           );
           const result = await response.json();
           if (!response.ok) throw new Error(result.error);
@@ -69,6 +106,7 @@
         } catch (error) {
           alert(error.message);
         } finally {
+          passphrase = null;
           busy = false;
           button.disabled = false;
         }

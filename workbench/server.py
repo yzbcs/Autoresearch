@@ -20,6 +20,7 @@ from auto_table.application import Application as TableApplication
 from auto_table.web.serve import create_server as create_table_server
 from auto_writing.web import serve as writing
 
+from .delete_auth import verify as verify_delete_passphrase
 from .deletion import delete as delete_task
 from .pipeline import PipelineManager
 from .journey import snapshot as journey_snapshot
@@ -156,7 +157,15 @@ class WorkbenchHandler(SimpleHTTPRequestHandler):
         status = 200
         try:
             payload = {}
-            if self.command == "POST":
+            if self.command in {"POST", "DELETE"}:
+                if self.command == "DELETE":
+                    if self.headers.get_content_type() != "application/json":
+                        raise PermissionError("请输入删除口令。")
+                    origin = self.headers.get("Origin")
+                    if origin and urlsplit(origin).netloc != self.headers.get("Host"):
+                        raise PermissionError("不允许跨站删除。")
+                    if not 0 < int(self.headers.get("Content-Length", "0")) <= 4096:
+                        raise PermissionError("删除请求过大。")
                 size = int(self.headers.get("Content-Length", "0"))
                 if not 0 < size <= MAX_REQUEST_BYTES:
                     raise ValueError("请求为空或超过 32 MB。")
@@ -168,6 +177,7 @@ class WorkbenchHandler(SimpleHTTPRequestHandler):
             summary = query.get("summary") == ["1"]
             if len(parts) == 5 and parts[1:3] == ["api", "items"] and self.command == "DELETE":
                 from urllib.parse import unquote
+                verify_delete_passphrase(payload.get("passphrase"), self.client_address[0])
                 result = delete_task(app, parts[3], unquote(parts[4]))
             elif path == "/api/pipelines" and self.command == "GET":
                 result = {"pipelines": app.pipeline.list(summary=summary)}
@@ -193,6 +203,8 @@ class WorkbenchHandler(SimpleHTTPRequestHandler):
                 result = app.runtime_state()
             else:
                 result, status = {"error": "接口不存在。"}, 404
+        except PermissionError as error:
+            result, status = {"error": str(error)}, 403
         except (ValueError, OSError, TypeError, KeyError) as error:
             result, status = {"error": str(error)}, 400
         data = json.dumps(result, ensure_ascii=False).encode()
