@@ -2,6 +2,15 @@
 
 (() => {
   const messages = {
+    当前待办: "Current action",
+    "去选择 Idea ↗": "Choose an idea ↗",
+    "去确认参考图 ↗": "Confirm reference images ↗",
+    "去查看审批 ↗": "Review approval ↗",
+    "查看问题与恢复选项 ↗": "See issue and recovery options ↗",
+    "查看恢复选项 ↗": "See recovery options ↗",
+    "查看当前任务 ↗": "Open current task ↗",
+    "查看交付产物 ↗": "View deliverables ↗",
+    "暂无详细说明，请打开任务查看。": "No details yet. Open the task to check its status.",
     "无法同步研究服务：": "Unable to sync: ",
     "。已保留最近一次画面，可返回工作台恢复服务。":
       ". The last view is retained. Restore the service in the workbench.",

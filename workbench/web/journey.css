@@ -1158,3 +1158,19 @@ h1 {
 
 /* Avoid continuous decorative repainting on completed branches. */
 .route-edge.main.done{animation:none;stroke-dasharray:none}
+
+.current-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-bottom: 16px;
+  padding: 16px 20px;
+  border: 1px solid #c5ddd8;
+  border-radius: 10px;
+  background: #eef7f5;
+}
+.current-action-copy { flex: 1 1 280px; min-width: 0; }
+.current-action h2 { margin: 4px 0; font-size: 18px; }
+.current-action p { margin: 0; overflow-wrap: anywhere; }

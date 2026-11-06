@@ -295,6 +295,32 @@
   function eventKey(e) {
     return `${e.at}|${e.stage}|${e.message}`;
   }
+  function renderCurrentAction(flow) {
+    const manage = `/?flow=${encodeURIComponent(flow.id)}`;
+    const moduleUrl = data.nodes.find((node) => node.stage === flow.stage && node.url)?.url;
+    const reviewFigure = flow.status === "waiting_review" && flow.stage === "figure";
+    const actions = {
+      waiting_selection: ["等待选题", "去选择 Idea ↗", manage],
+      waiting_review: reviewFigure
+        ? ["等待确认参考图", "去确认参考图 ↗", moduleUrl || manage]
+        : ["等待审批", "去查看审批 ↗", moduleUrl || manage],
+      blocked: ["需要处理", "查看问题与恢复选项 ↗", manage],
+      failed: ["需要处理", "查看问题与恢复选项 ↗", manage],
+      paused: ["已暂停", "查看恢复选项 ↗", manage],
+      running: ["运行中", "查看当前任务 ↗", moduleUrl || manage],
+      completed: ["已完成", "查看交付产物 ↗", moduleUrl || manage],
+    };
+    const [state, action, href] = actions[flow.status] || [
+      statusText(flow), "管理流程 ↗", manage,
+    ];
+    setMarkup(
+      "#current-action",
+      `<div class="current-action-copy"><span class="eyebrow">${escape(t("当前待办"))}</span>
+        <h2>${escape(t(state))} · ${escape(t(stageTitles[flow.stage] || flow.stage))}</h2>
+        <p data-user-content>${escape(t(flow.message || "暂无详细说明，请打开任务查看。"))}</p></div>
+        <a class="button" href="${escape(href)}">${escape(t(action))}</a>`,
+    );
+  }
   function render() {
     const f = data.flow;
     $("#welcome").hidden = true;
@@ -321,6 +347,7 @@
             n.stage === f.stage &&
             ["running", "waiting", "blocked", "paused"].includes(n.status),
         )?.id || data.nodes.find((n) => n.stage === f.stage)?.id;
+    renderCurrentAction(f);
     metrics();
     renderGraph();
     renderNode();
