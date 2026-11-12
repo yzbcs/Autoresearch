@@ -6,6 +6,8 @@ AutoResearch 将 **Auto Search、Auto Design、Auto Writing、Auto Table、Auto 
 
 第一次使用？从这里开始：**页面操作指引 · 五模块使用步骤 · 科研航线 · 常见问题 · PDF 图文版下载**。
 
+账号版团队服务器的 SSH 连接、注册登录与本机代理设置见 [团队服务器使用指南](docs/TEAM_USER_GUIDE.zh-CN.md)。
+
 ## 五模块工作台
 
 在仓库根目录运行（Python 3.11+）：

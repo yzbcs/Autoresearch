@@ -2,6 +2,8 @@
 
 当前安装目录为 `/root/autodl-tmp/yzb/autoresearch`，Python 使用项目现有的 `.conda-env/bin/python3`。工作台数据目录为 `assets/output/workbench/`，账号库位于该目录下的 `accounts.sqlite3`。
 
+团队成员的连接、注册登录与日常操作步骤见 [团队服务器使用指南](../docs/TEAM_USER_GUIDE.zh-CN.md)。
+
 ## 启动与访问
 
 在服务器执行启动脚本。守护程序会后台运行，重复启动会通过文件锁合并到同一实例。
