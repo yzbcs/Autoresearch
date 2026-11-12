@@ -16,6 +16,9 @@ from typing import Any, Callable
 
 
 ROOT = Path(__file__).resolve().parent
+if str(ROOT.parent) not in sys.path:
+    sys.path.insert(0, str(ROOT.parent))
+from workbench.connection_context import codex_environment
 PROMPT_PATH = ROOT / "prompt.md"
 DEFAULT_OUTPUT_DIR = ROOT / "ideas"
 MAX_GENERATION_ATTEMPTS = 3
@@ -42,6 +45,7 @@ def run_command(
         return subprocess.run(
             command,
             cwd=cwd,
+            env=codex_environment(),
             input=prompt,
             capture_output=True,
             text=True,
@@ -57,6 +61,7 @@ def run_command(
     process = subprocess.Popen(
         command,
         cwd=cwd,
+        env=codex_environment(),
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

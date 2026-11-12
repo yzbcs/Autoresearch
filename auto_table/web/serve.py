@@ -12,6 +12,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
+from workbench.connection_context import ConnectionHandlerMixin
 from auto_table.application import Application
 from auto_table.engine.table_types import available_table_types
 from auto_table.engine.templates import available_templates
@@ -21,7 +22,7 @@ WEB_ROOT = Path(__file__).resolve().parent
 MAX_REQUEST_BYTES = 32 * 1024 * 1024
 
 
-class AppHandler(SimpleHTTPRequestHandler):
+class AppHandler(ConnectionHandlerMixin, SimpleHTTPRequestHandler):
     def __init__(self, *args, app, **kwargs):
         self.app = app
         super().__init__(*args, directory=str(WEB_ROOT), **kwargs)

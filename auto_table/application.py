@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from auto_writing.web.serve import compile_latex
+from workbench.connection_context import background_thread
 from workbench.task_naming import create_task_directory, name_pattern
 
 from . import codex_runner
@@ -229,7 +230,7 @@ class Application:
             self.save(project)
             job = codex_runner.Job()
             self.jobs[project_id] = job
-            thread = threading.Thread(target=self._run, args=(project_id, job), daemon=True)
+            thread = background_thread(target=self._run, args=(project_id, job), daemon=True)
             self.threads[project_id] = thread
             thread.start()
             return copy.deepcopy(project)

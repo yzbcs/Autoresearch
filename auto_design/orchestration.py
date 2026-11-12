@@ -10,6 +10,7 @@ import threading
 import uuid
 from pathlib import Path
 
+from workbench.connection_context import background_thread
 from workbench.task_naming import create_task_directory
 
 from .codex_runner import CodexRunner, ControllerInterrupted, utc_now
@@ -211,12 +212,13 @@ def validate_handoff(run_dir: Path, action: str, response: dict, before_stage: s
 
 
 class TaskManager:
-    def __init__(self, root: Path, runner: CodexRunner | None = None) -> None:
+    def __init__(self, root: Path, runner: CodexRunner | None = None, *, allowed_workspace: Path | None = None) -> None:
         self.root = root.resolve()
         self.root.mkdir(parents=True, exist_ok=True)
         self.index_path = self.root / "tasks.json"
         self.lock = threading.RLock()
         self.runner = runner or CodexRunner()
+        self.allowed_workspace = allowed_workspace.resolve() if allowed_workspace else None
         self.tasks = read_json(self.index_path) if self.index_path.is_file() else {}
         self.threads: dict[str, threading.Thread] = {}
         for task in self.tasks.values():
@@ -224,6 +226,10 @@ class TaskManager:
                 task["status"] = "paused"
                 task["summary"] = "服务重新启动。继续前会先核对在途进程和已有结果，避免重复实验。"
         self._save()
+
+    def check_workspace(self, path: Path) -> None:
+        if self.allowed_workspace is not None and not path.resolve().is_relative_to(self.allowed_workspace):
+            raise ValueError("目录不属于当前账号的工作空间。")
 
     def _save(self) -> None:
         write_json(self.index_path, self.tasks)
@@ -252,6 +258,7 @@ class TaskManager:
         if re.match(r"(?im)^#\s+PASS:", idea):
             raise ValueError("Auto Search 的 PASS 表示放弃方案，不能作为实验 Idea。")
         working_dir = Path(workspace).expanduser()
+        self.check_workspace(working_dir)
         if not working_dir.is_absolute() or not working_dir.is_dir():
             raise ValueError("实验工作目录必须是已存在的绝对路径。")
         if scope not in {"full", "design_only"}:
@@ -268,6 +275,8 @@ class TaskManager:
     def import_run(self, title: str, run_dir: str, workspace: str) -> dict:
         directory = Path(run_dir).expanduser().resolve()
         working_dir = Path(workspace).expanduser().resolve()
+        self.check_workspace(working_dir)
+        self.check_workspace(directory)
         if not working_dir.is_dir():
             raise ValueError("实验工作目录不存在。")
         stage = read_current_stage(directory)
@@ -335,7 +344,7 @@ class TaskManager:
             (Path(task["run_dir"]) / "controller_stop_requested.json").unlink(missing_ok=True)
             self.update(task_id, status="queued", error=None, scope=scope or task["scope"],
                         recovery_note=recovery_note.strip(), previous_error=task.get("error"))
-            thread = threading.Thread(target=self._run, args=(task_id,), daemon=True)
+            thread = background_thread(target=self._run, args=(task_id,), daemon=True)
             self.threads[task_id] = thread
             thread.start()
             return self.get(task_id)

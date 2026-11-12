@@ -1,8 +1,8 @@
 """Auto Figure-only structured model I/O; no model shell access is required."""
 import json
 import os
-from pathlib import Path
 import subprocess
+from workbench.connection_context import connection_environment
 from auto_writing.web.serve import resolve_codex_cli
 from .figurecrafter_runner import ProcessGroup, runtime_environment
 
@@ -31,7 +31,7 @@ def invoke(prompt, schema, directory, log_dir, name, job, images=(), config=None
     (log_dir / f'{name}.prompt.md').write_text(prompt)
     own_group = not os.environ.get('FIGURECRAFTER_NESTED_WORKER')
     with (log_dir / f'{name}.log').open('w') as log:
-        process = subprocess.Popen(command, cwd=directory, env=runtime_environment(), stdin=subprocess.PIPE,
+        process = subprocess.Popen(command, cwd=directory, env=connection_environment(runtime_environment(), require=True), stdin=subprocess.PIPE,
                                    stdout=log, stderr=subprocess.STDOUT, text=True, start_new_session=own_group)
         job.set_process(ProcessGroup(process) if own_group else process)
         try:

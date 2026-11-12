@@ -14,13 +14,14 @@ from urllib.parse import unquote, urlparse
 if not __package__:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from workbench.connection_context import ConnectionHandlerMixin
 from auto_design.codex_runner import resolve_codex_cli
 from auto_design.orchestration import TaskManager
 
 WEB_ROOT = Path(__file__).resolve().parent
 
 
-class AppHandler(SimpleHTTPRequestHandler):
+class AppHandler(ConnectionHandlerMixin, SimpleHTTPRequestHandler):
     def __init__(self, *args, manager: TaskManager, workspace: Path, **kwargs):
         self.manager = manager
         self.workspace = workspace

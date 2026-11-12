@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+autoresearch_root=/root/autodl-tmp/yzb/autoresearch
+case "${1:-}" in
+  --version|-V|--help|-h)
+    exec "$autoresearch_root/.tools/codex/libexec/codex" "$@"
+    ;;
+esac
+export CODEX_HOME="${CODEX_HOME:-$autoresearch_root/.cache/codex}"
+export TMPDIR="${TMPDIR:-$autoresearch_root/assets/tmp}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$autoresearch_root/.cache}"
+autoresearch_codex_options=()
+if [[ "${AUTORESEARCH_PROXY_REQUIRED:-0}" == 1 ]]; then
+  if [[ -z "${AUTORESEARCH_PROXY_URL:-}" ]]; then
+    echo '请使用包含 -R 反向转发的 SSH 命令连接本机代理，再继续任务。' >&2
+    exit 78
+  fi
+  unset ALL_PROXY all_proxy
+  export HTTP_PROXY="$AUTORESEARCH_PROXY_URL" HTTPS_PROXY="$AUTORESEARCH_PROXY_URL"
+  export http_proxy="$AUTORESEARCH_PROXY_URL" https_proxy="$AUTORESEARCH_PROXY_URL"
+  export NO_PROXY=localhost,127.0.0.1,::1 no_proxy=localhost,127.0.0.1,::1
+  autoresearch_codex_options+=(
+    --disable unbounded_connection_retries
+    --config 'model_providers.autoresearch_sse={name="AutoResearch ChatGPT SSE",base_url="https://chatgpt.com/backend-api/codex",wire_api="responses",requires_openai_auth=true,supports_websockets=false}'
+    --config 'model_provider="autoresearch_sse"'
+  )
+elif [[ -f "$autoresearch_root/deployment/proxy.env" ]]; then
+  source "$autoresearch_root/deployment/proxy.env"
+fi
+for argument in "$@"; do
+  if [[ "$argument" == --no-daemon ]]; then
+    exec "$autoresearch_root/.tools/codex/libexec/codex" "${autoresearch_codex_options[@]}" "$@"
+  fi
+done
+exec "$autoresearch_root/.tools/codex/libexec/codex" --no-daemon "${autoresearch_codex_options[@]}" "$@"

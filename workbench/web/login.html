@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>登录 · AutoResearch</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/accounts.css" />
+    <script src="/login.js" defer></script>
+  </head>
+  <body class="auth-page">
+    <header class="topbar">
+      <a class="brand" href="/login.html" aria-label="AutoResearch">
+        <span class="brand-logo-frame"
+          ><img
+            src="/auto-design/assets/the-thainker-logo.png"
+            alt="The ThAInker"
+        /></span>
+        <span><strong>The ThAInker</strong></span>
+      </a>
+      <span class="auth-platform-name">AutoResearch 科研平台</span>
+    </header>
+    <main class="auth-main">
+      <section class="auth-card" aria-labelledby="auth-title">
+        <div class="auth-wordmark">AutoResearch</div>
+        <h1 id="auth-title">登录工作台</h1>
+        <p id="auth-description" class="auth-description">
+          进入你的科研项目与研究流程。
+        </p>
+        <p id="connection-note" class="connection-note" role="status" hidden></p>
+        <div id="auth-tabs" class="auth-tabs" aria-label="账号入口">
+          <button type="button" id="login-tab" aria-pressed="true">登录</button>
+          <button type="button" id="register-tab" aria-pressed="false">
+            注册账号
+          </button>
+        </div>
+        <p id="auth-error" class="account-error" role="alert" hidden></p>
+        <form id="auth-form">
+          <label id="setup-field" hidden
+            >管理员初始化口令
+            <input name="setup_token" type="password" autocomplete="off" />
+            <small>从服务器启动终端获取一次性口令。</small>
+          </label>
+          <label
+            >用户名
+            <input
+              name="username"
+              autocomplete="username"
+              required
+              maxlength="32"
+              autofocus
+            />
+          </label>
+          <label
+            >密码
+            <input
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+              maxlength="128"
+            />
+          </label>
+          <label id="confirm-field" hidden
+            >确认密码
+            <input
+              name="confirm_password"
+              type="password"
+              autocomplete="new-password"
+              maxlength="128"
+            />
+          </label>
+          <p id="password-hint" class="field-hint" hidden>
+            密码使用 6 到 128
+            个字符。用户名支持字母、数字、下划线、点和连字符。
+          </p>
+          <button id="auth-submit" class="auth-submit" type="submit">
+            登录
+          </button>
+        </form>
+        <p id="registration-note" class="auth-footer" hidden>
+          当前注册已关闭，可联系平台管理员。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

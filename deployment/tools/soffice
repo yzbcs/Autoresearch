@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+autoresearch_root=/root/autodl-tmp/yzb/autoresearch
+export TMPDIR="${TMPDIR:-$autoresearch_root/assets/tmp/auto_figure}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$autoresearch_root/.cache/figurecrafter}"
+export SAL_USE_VCLPLUGIN=svp
+export SAL_DISABLE_OPENCL=1
+mkdir -p "$TMPDIR" "$XDG_CACHE_HOME"
+autoresearch_profile="$(mktemp -d "$TMPDIR/libreoffice-profile.XXXXXX")"
+trap 'rm -rf -- "$autoresearch_profile"' EXIT
+"$autoresearch_root/.tools/libreoffice/opt/libreoffice26.8/program/soffice" \
+  "-env:UserInstallation=file://$autoresearch_profile" "$@"

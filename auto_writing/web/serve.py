@@ -27,6 +27,8 @@ WEB_ROOT = Path(__file__).resolve().parent
 AUTO_WRITING_ROOT = WEB_ROOT.parent
 if str(AUTO_WRITING_ROOT.parent) not in sys.path:
     sys.path.insert(0, str(AUTO_WRITING_ROOT.parent))
+from workbench.connection_context import ConnectionHandlerMixin
+from workbench.connection_context import background_thread, codex_environment
 from workbench.task_naming import create_task_directory, name_pattern
 
 WRITING_RUNS_ROOT = AUTO_WRITING_ROOT / "writing_runs"
@@ -1318,6 +1320,7 @@ def invoke_codex_json(
 
     process = subprocess.Popen(
         command,
+        env=codex_environment(),
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -1986,7 +1989,7 @@ class GenerationManager:
                 if not zipfile.is_zipfile(io.BytesIO(data)):
                     raise ValueError("LaTeX 模板不是有效的 ZIP。")
                 write_bytes_atomic(safe_project_dir(project_id) / "input/latex-template.zip", data)
-            thread = threading.Thread(target=self._run_auto, args=(project["id"],), daemon=True)
+            thread = background_thread(target=self._run_auto, args=(project["id"],), daemon=True)
             self.automation_threads[project_id] = thread
             state = self.set_automation(project_id, "running", "自动推进调研、六章节、引用与 PDF；失败时保留当前步骤。")
             thread.start()
@@ -2044,7 +2047,7 @@ class GenerationManager:
             self.jobs[job.id] = job
             project["publication"].update(status="running", job_id=job.id, error=None)
             save_project(project)
-            threading.Thread(target=self._run_recompile, args=(job,), daemon=True).start()
+            background_thread(target=self._run_recompile, args=(job,), daemon=True).start()
             return job
 
     def _run_recompile(self, job: GenerationJob) -> None:
@@ -2087,7 +2090,7 @@ class GenerationManager:
                 {"status": "running", "error": None, "job_id": job.id}
             )
             save_project(project)
-            thread = threading.Thread(
+            thread = background_thread(
                 target=self._run,
                 args=(job,),
                 daemon=True,
@@ -2113,7 +2116,7 @@ class GenerationManager:
                 {"status": "running", "error": None, "job_id": job.id}
             )
             save_project(project)
-            thread = threading.Thread(
+            thread = background_thread(
                 target=self._run_research,
                 args=(job,),
                 daemon=True,
@@ -2169,7 +2172,7 @@ class GenerationManager:
             }
             save_project(project)
             refresh_path_contract(project)
-            thread = threading.Thread(
+            thread = background_thread(
                 target=self._run_publication,
                 args=(job,),
                 daemon=True,
@@ -2559,7 +2562,7 @@ def list_projects() -> list[dict[str, Any]]:
     return sorted(projects, key=lambda item: item["created_at"], reverse=True)
 
 
-class AppHandler(SimpleHTTPRequestHandler):
+class AppHandler(ConnectionHandlerMixin, SimpleHTTPRequestHandler):
     server_version = "AutoWritingWorkspace/1.0"
 
     def end_headers(self) -> None:

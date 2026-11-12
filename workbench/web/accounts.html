@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>账号管理 · AutoResearch</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/shell.css" />
+    <link rel="stylesheet" href="/module-nav.css" />
+    <script src="/accounts.js" defer></script>
+  </head>
+  <body class="workbench-shell">
+    <header class="topbar">
+      <a class="brand" href="/"
+        ><span class="brand-logo-frame"
+          ><img
+            src="/auto-design/assets/the-thainker-logo.png"
+            alt="The ThAInker" /></span
+        ><span><strong>The ThAInker</strong></span></a
+      >
+      <nav class="module-nav" aria-label="平台导航">
+        <a href="/">工作台</a><a href="/journey.html">Research Journey</a
+        ><a href="/accounts.html" aria-current="page">账号管理</a>
+      </nav>
+    </header>
+    <main class="accounts-main">
+      <section class="accounts-heading">
+        <div>
+          <h1>账号管理</h1>
+          <p>管理平台成员、账号状态与注册入口。</p>
+        </div>
+        <label class="registration-control"
+          ><input type="checkbox" id="registration-open" />允许新用户注册</label
+        >
+      </section>
+      <p id="accounts-message" class="account-feedback" role="status"></p>
+    <p class="accounts-mobile-hint">横向滑动可查看完整账号信息与管理操作。</p>
+    <div class="accounts-table-wrap">
+        <table class="accounts-table">
+          <thead>
+            <tr>
+              <th>账号</th>
+              <th>角色</th>
+              <th>状态</th>
+              <th>最近登录</th>
+              <th>管理</th>
+            </tr>
+          </thead>
+          <tbody id="accounts-list"></tbody>
+        </table>
+      </div>
+      <dialog id="reset-password" class="account-dialog">
+        <form>
+          <h2>重置成员密码</h2>
+          <p id="reset-username"></p>
+          <p class="account-error" role="alert" hidden></p>
+          <label
+            >新密码<input
+              name="password"
+              type="password"
+              required
+              minlength="6"
+              maxlength="128"
+              autocomplete="new-password" /></label
+          ><label
+            >确认新密码<input
+              name="confirmation"
+              type="password"
+              required
+              minlength="6"
+              maxlength="128"
+              autocomplete="new-password"
+          /></label>
+          <div class="account-dialog-actions">
+            <button type="button" class="secondary">取消</button
+            ><button type="submit">重置密码</button>
+          </div>
+        </form>
+      </dialog>
+    </main>
+  </body>
+</html>

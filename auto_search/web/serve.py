@@ -26,6 +26,8 @@ if str(PROJECT_ROOT.parent) not in sys.path:
 import direction_research
 import research_pipeline
 
+from workbench.connection_context import ConnectionHandlerMixin
+from workbench.connection_context import background_thread
 from workbench.task_naming import create_task_directory, name_pattern
 
 try:
@@ -192,7 +194,7 @@ class JobManager:
         job = ResearchJob(direction, paper_count, evaluate, timeout, pipeline_id=pipeline_id, title=title)
         with self.lock:
             self.jobs[job.id] = job
-        thread = threading.Thread(target=self._run, args=(job,), daemon=True, name=f"w2c-{job.id}")
+        thread = background_thread(target=self._run, args=(job,), daemon=True, name=f"w2c-{job.id}")
         thread.start()
         return job
 
@@ -213,7 +215,7 @@ class JobManager:
             job = ResearchJob(saved["direction"], saved["paper_count"], saved["evaluate"],
                               saved.get("timeout", 900), run_dir=directory)
             self.jobs[job.id] = job
-            threading.Thread(target=self._run, args=(job,), daemon=True).start()
+            background_thread(target=self._run, args=(job,), daemon=True).start()
             return job
 
     def stop(self, job_id: str) -> ResearchJob:
@@ -478,7 +480,7 @@ def list_run_summaries() -> list[dict[str, Any]]:
 JOB_MANAGER = JobManager()
 
 
-class AppHandler(SimpleHTTPRequestHandler):
+class AppHandler(ConnectionHandlerMixin, SimpleHTTPRequestHandler):
     server_version = "W2CIdeaBrowser/1.0"
 
     def end_headers(self) -> None:

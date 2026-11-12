@@ -12,6 +12,8 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
+from workbench.connection_context import codex_environment
+
 MODULE_ROOT = Path(__file__).resolve().parent
 
 
@@ -72,6 +74,7 @@ class CodexRunner:
                 process = subprocess.Popen(
                     command,
                     cwd=workspace,
+                    env=codex_environment(),
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=stderr,

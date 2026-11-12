@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+exec /root/autodl-tmp/yzb/autoresearch/deployment/ycodex "$@"

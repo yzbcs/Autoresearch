@@ -7,6 +7,7 @@ import shutil
 import signal
 import subprocess
 import time
+from workbench.connection_context import connection_environment
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent
@@ -53,7 +54,7 @@ def runtime_environment():
     temporary = REPO / 'assets/tmp/auto_figure'
     for p in (cache, temporary, REPO / ".cache/fc-ipc"):
         p.mkdir(parents=True, exist_ok=True)
-    env = dict(os.environ)
+    env = connection_environment()
     for k, value in {
         'HF_HOME': cache / 'huggingface', 'TORCH_HOME': cache / 'torch',
         'XDG_CACHE_HOME': cache, 'XDG_CONFIG_HOME': cache / 'config',

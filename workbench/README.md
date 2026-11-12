@@ -2,6 +2,8 @@
 
 一个网页入口分别进入 Auto Search、Auto Design、Auto Writing、Auto Table 和 Auto Figure。五个模块保留各自的完整前端、后台任务管理器、提示词、Schema、科学约束和独立启动方式。
 
+工作台入口现已接入账号系统。首次启动时，在初始化页面使用终端打印的一次性口令创建管理员，用户名预填为 `admin`。管理员接管原 `data-dir` 中的科研项目，后续注册的成员获得独立目录与研究进程，统一复用服务器 Codex。账号管理、数据结构、部署和备份见 [账号系统说明](../docs/account-management.md)。
+
 ## 启动
 
 在仓库根目录使用 Python 3.11+：

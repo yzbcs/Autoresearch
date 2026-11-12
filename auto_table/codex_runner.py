@@ -7,6 +7,7 @@ import os
 import subprocess
 from pathlib import Path
 
+from workbench.connection_context import codex_environment
 from auto_writing.web.serve import codex_timeout_seconds, resolve_codex_cli
 
 
@@ -77,6 +78,7 @@ def invoke(prompt: str, schema: Path, directory: Path, log_dir: Path, name: str,
         process = subprocess.Popen(
             command,
             cwd=directory,
+            env=codex_environment(),
             stdin=subprocess.PIPE,
             stdout=log,
             stderr=subprocess.STDOUT,

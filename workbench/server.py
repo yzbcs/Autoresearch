@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import hmac
 import http.client
 import json
+import os
 import threading
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -20,10 +22,11 @@ from auto_table.application import Application as TableApplication
 from auto_table.web.serve import create_server as create_table_server
 from auto_writing.web import serve as writing
 
+from workbench.connection_context import ConnectionHandlerMixin
 from .delete_auth import verify as verify_delete_passphrase
 from .deletion import delete as delete_task
-from .pipeline import PipelineManager
 from .journey import snapshot as journey_snapshot
+from .pipeline import PipelineManager
 
 WEB_ROOT = Path(__file__).resolve().parent / "web"
 MODULES = ("auto-search", "auto-design", "auto-writing", "auto-table", "auto-figure")
@@ -46,7 +49,7 @@ def add_navigation(content: bytes, module: str) -> bytes:
     return html.encode("utf-8")
 
 
-class WorkbenchHandler(SimpleHTTPRequestHandler):
+class WorkbenchHandler(ConnectionHandlerMixin, SimpleHTTPRequestHandler):
     def __init__(self, *args, modules: dict[str, ThreadingHTTPServer], workbench=None, **kwargs):
         self.modules = modules
         self.workbench = workbench
@@ -57,6 +60,10 @@ class WorkbenchHandler(SimpleHTTPRequestHandler):
         super().end_headers()
 
     def route(self) -> None:
+        expected_token = self.workbench.worker_token if self.workbench else ""
+        if expected_token and not hmac.compare_digest(self.headers.get("X-AutoResearch-Worker", ""), expected_token):
+            self.send_error(403, "Use the authenticated workbench entry point")
+            return
         url = urlsplit(self.path)
         if url.path.startswith("/api/") and self.workbench is not None:
             self.workbench_api(url.path.rstrip("/"))
@@ -220,17 +227,21 @@ class WorkbenchHandler(SimpleHTTPRequestHandler):
 
 
 class Workbench:
-    def __init__(self, workspace: Path, data_dir: Path, host: str = "127.0.0.1", port: int = 8760):
+    def __init__(self, workspace: Path, data_dir: Path, host: str = "127.0.0.1", port: int = 8760,
+                 *, tenant_root: Path | None = None, worker_token: str = ""):
         self.workspace = workspace.resolve()
         self.data_dir = data_dir.resolve()
+        self.worker_token = worker_token
         self.modules: dict[str, ThreadingHTTPServer] = {}
         self.threads: list[threading.Thread] = []
         search.RUNS_ROOT = self.data_dir / "auto_search"
+        if tenant_root is not None:
+            search.READABLE_RUNS = set()
         writing.WRITING_RUNS_ROOT = self.data_dir / "auto_writing"
         search.RUNS_ROOT.mkdir(parents=True, exist_ok=True)
         writing.WRITING_RUNS_ROOT.mkdir(parents=True, exist_ok=True)
         writing.migrate_existing_research_references()
-        self.design = TaskManager(self.data_dir / "auto_design")
+        self.design = TaskManager(self.data_dir / "auto_design", allowed_workspace=tenant_root)
         self.table = TableApplication(self.workspace, self.data_dir / "auto_table")
         self.figure = FigureApplication(self.workspace, self.data_dir / "auto_figure", table=self.table)
         self.pipeline = PipelineManager(
@@ -331,12 +342,14 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--port", type=int, default=8760)
     parser.add_argument("--workspace", type=Path, default=Path.cwd())
     parser.add_argument("--data-dir", type=Path)
+    parser.add_argument("--tenant-root", type=Path)
     args = parser.parse_args(argv)
     workspace = args.workspace.expanduser().resolve()
     if not workspace.is_dir():
         parser.error("workspace 必须是已存在的目录")
     data_dir = (args.data_dir or workspace / "assets/output/workbench").expanduser().resolve()
-    app = Workbench(workspace, data_dir, args.host, args.port)
+    app = Workbench(workspace, data_dir, args.host, args.port, tenant_root=args.tenant_root,
+                    worker_token=os.environ.get("AUTORESEARCH_WORKER_TOKEN", ""))
     app.start_modules()
     print(f"AutoResearch: http://{args.host}:{app.server.server_port}/", flush=True)
     print(f"Workspace: {workspace}\nTask data: {data_dir}", flush=True)

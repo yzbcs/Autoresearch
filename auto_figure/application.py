@@ -17,6 +17,7 @@ from auto_table.application import now, render_pdf, simple_name, write_json
 from auto_table.codex_runner import Job
 from .codex_bridge import invoke
 from auto_writing.web.serve import create_latex_zip
+from workbench.connection_context import background_thread
 from workbench.task_naming import create_task_directory, name_pattern
 
 from . import manuscript, rendering, references, figurecrafter_runner as upstream_runner
@@ -272,7 +273,7 @@ class Application:
             self.save(project)
             job = Job()
             self.jobs[project_id] = job
-            thread = threading.Thread(target=self._run, args=(project_id, job), daemon=True)
+            thread = background_thread(target=self._run, args=(project_id, job), daemon=True)
             self.threads[project_id] = thread
             thread.start()
             return copy.deepcopy(project)

@@ -19,6 +19,7 @@ from auto_design.orchestration import (
 )
 from auto_search.web import serve as search
 from auto_writing.web import serve as writing
+from .connection_context import connection_scope, current_connection
 
 
 def encoded_file(path: Path) -> dict:
@@ -139,6 +140,7 @@ class PipelineManager:
             now = utc_now()
             flow = {
                 "id": flow_id,
+                "connection_id": current_connection(),
                 "title": title,
                 "direction": direction,
                 "paper_count": count,
@@ -200,6 +202,7 @@ class PipelineManager:
                 if flow["status"] == "running":
                     raise ValueError("流程正在推进，无需重复启动。")
                 flow.update(retry=True, recovery_note=str(payload.get("recovery_note", "")))
+                flow["connection_id"] = current_connection()
                 if flow["stage"] == "writing" and flow.get("writing_id"):
                     (writing.safe_project_dir(flow["writing_id"]) / "recovery_note.md").write_text(
                         flow["recovery_note"], encoding="utf-8"
@@ -213,6 +216,7 @@ class PipelineManager:
                 if idea_id not in candidates or not candidates[idea_id]["eligible"]:
                     raise ValueError("请选择一个未放弃且有有效 Idea 文档的方案。")
                 flow["idea_id"] = idea_id
+                flow["connection_id"] = current_connection()
                 self.update(flow, "running", "已选定 Idea，将自动交接实验。")
                 self.save(flow)
             elif action == "template":
@@ -304,7 +308,8 @@ class PipelineManager:
                     if not (flow['status'] == 'blocked' and flow['stage'] == 'figure'):
                         continue
                 try:
-                    getattr(self, f"advance_{flow['stage']}")(flow)
+                    with connection_scope(flow.get("connection_id")):
+                        getattr(self, f"advance_{flow['stage']}")(flow)
                 except Exception as error:  # noqa: BLE001 - persist worker failures for browser recovery
                     self.update(flow, "blocked", str(error))
 
