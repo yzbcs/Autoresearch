@@ -110,3 +110,7 @@ Top-level `status: PASS` means only that deterministic artifact structure is usa
 - `FAIL`: any design/evidence gap remains. Name it and stay before design readiness.
 
 An absent family needs a contribution-grounded reason under `## Absent families`; placeholder prose may satisfy the structural parser but not this scientific judgement. Update state with `python3 -m auto_design advance`. The next execution worker is `run`.
+
+## 数据隔离检查的适用范围
+
+隔离规则必须针对当前任务可达的具体泄漏途径，使用实际可取得的来源、样本/文档ID、图像及标注信息。配置选择与正式评测的样本和图像应独立；不同图像共享常见文字不自动构成泄漏。除非科学输入明确要求文本去污染或已有证据表明同文档复用，不得将完整页面转写、通用文本shingle相似度或无法取得的上游字段设为必过门槛。缺少与实际估计目标无关的字段，记录为核验局限，不伪装成实验失败。真实样本重叠、标签流入配置选择或正式范围改变仍须阻止执行。已有不适用门槛由design在新一轮修订并冻结，保留旧失败证据；run不得将失败改写为通过。不新增无实际用途的哈希、评分器或防御性检查。每项检查说明具体检测的失败及失败后改变的动作。

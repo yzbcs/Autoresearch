@@ -27,13 +27,29 @@ function fileUrl(path) { return `${moduleBase}/api/tasks/${state.activeId}/files
 function fileLink(path, label) { const a = element("a", label); a.href = fileUrl(path); a.target = "_blank"; a.rel = "noopener"; return a; }
 function selectTab(name) { state.tab = name; document.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === name))); document.querySelectorAll("[data-panel]").forEach((p) => { p.hidden = p.dataset.panel !== name; }); }
 
+async function readExecutionDisplay(task) {
+  if (task.stage !== "EXECUTION_IN_PROGRESS") return;
+  try {
+    const response = await fetch(`${moduleBase}/api/tasks/${task.id}/files/assets/execution_status.json`, { cache: "no-store" });
+    if (!response.ok) return;
+    const live = await response.json();
+    if (Date.now() - Date.parse(live.checked_at) > 60000) {
+      task.displayStatus = "blocked";
+      task.displaySummary = "后台状态暂未更新，请检查执行日志。";
+      return;
+    }
+    task.displayStatus = live.status;
+    task.displaySummary = live.summary;
+  } catch (_) { /* Preserve the controller status when no live record is available. */ }
+}
+
 function renderList() {
   $("#task-count").textContent = `${state.tasks.length} 个实验任务`;
   const buttons = state.tasks.map((task) => {
     const button = element("button", undefined, "task-item" + (task.id === state.activeId ? " selected" : ""));
     button.dataset.deleteTask = task.id;
     const label = element("span", undefined, "task-label");
-    label.append(element("strong", task.title), element("small", `${labels[task.status] || task.status} · ${new Date(task.created_at).toLocaleDateString("zh-CN")}`));
+    label.append(element("strong", task.title), element("small", `${labels[task.displayStatus || task.status] || task.status} · ${new Date(task.created_at).toLocaleDateString("zh-CN")}`));
     button.append(icon("folder"), label);
     button.addEventListener("click", () => { setSidebar(false); selectTask(task.id).catch((error) => notice(error.message)); });
     return button;
@@ -54,13 +70,13 @@ function renderTable(container, headers, rows) {
 function renderTask() {
   const task = state.task; if (!task) return;
   $("#welcome").hidden = true; $("#workspace").hidden = false;
-  $("#task-title").textContent = task.title; $("#task-status").textContent = labels[task.status] || task.status;
-  $("#task-status").dataset.status = task.status;
+  $("#task-title").textContent = task.title; $("#task-status").textContent = labels[task.displayStatus || task.status] || task.status;
+  $("#task-status").dataset.status = task.displayStatus || task.status;
   $("#task-stage").textContent = stages[task.stage] || task.stage;
-  $("#task-summary").textContent = task.summary; $("#task-error").textContent = task.error || ""; $("#task-error").hidden = !task.error;
+  $("#task-summary").textContent = task.displaySummary ? `${task.displaySummary}\n${task.summary}` : task.summary; $("#task-error").textContent = task.error || ""; $("#task-error").hidden = !task.error;
   const active = ["queued", "running", "pausing"].includes(task.status);
   const pendingReview = Boolean(task.review && !task.review.approved);
-  $("#run-task").hidden = active || pendingReview || ["completed", "abandoned"].includes(task.status);
+  $("#run-task").hidden = task.displayStatus === "running" || active || pendingReview || ["completed", "abandoned"].includes(task.status);
   $("#run-task").textContent = task.status === "created" ? "开始执行" : task.status === "design_ready" ? "开始实验" : "继续执行";
   $("#pause-task").hidden = !active; $("#pause-task").disabled = task.status === "pausing";
   $("#pause-task").textContent = task.status === "pausing" ? "等待安全收尾" : "安全暂停";
@@ -106,7 +122,7 @@ function renderTask() {
   selectTab(state.tab);
 }
 
-async function selectTask(id) { state.activeId = id; state.task = await api(`/api/tasks/${id}`); renderList(); renderTask(); }
+async function selectTask(id) { state.activeId = id; state.task = await api(`/api/tasks/${id}`); await readExecutionDisplay(state.task); renderList(); renderTask(); }
 async function refresh() {
   const reconnecting = !state.connected;
   try {
@@ -114,8 +130,8 @@ async function refresh() {
     $("#connection").textContent = health.codex_cli ? "本地服务已连接" : "服务已连接 · Codex 未配置";
     $("#connection-dot").classList.add("connected");
     for (const form of [$("#task-form"), $("#import-form")]) if (!form.elements.workspace.value) form.elements.workspace.value = health.workspace;
-    state.tasks = (await api("/api/tasks")).tasks; renderList();
-    if (state.activeId) { state.task = await api(`/api/tasks/${state.activeId}`); renderTask(); }
+    state.tasks = (await api("/api/tasks")).tasks; await Promise.all(state.tasks.map(readExecutionDisplay)); renderList();
+    if (state.activeId) { state.task = await api(`/api/tasks/${state.activeId}`); await readExecutionDisplay(state.task); renderTask(); }
     if (reconnecting) notice();
   } catch (error) { state.connected = false; $("#connection").textContent = "本地服务未连接"; $("#connection-dot").classList.remove("connected"); notice(error.message); }
 }

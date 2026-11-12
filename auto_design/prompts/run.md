@@ -100,3 +100,13 @@ Comparison rules:
 Write `implementation_notes.md`, the project environment, runnable entrypoints, `command_plan.json`, `experiment_schedule.json`, `result_contract.json`, preflight reports, `execution_record.json`, logs, collected results, `result_summary.json`, and `effect_comparison.md`. When a breakpoint occurs, also maintain `breakpoint_recovery.md` and, after boundary recovery ends without resolution, `method_revision_request.md`. Keep `expected_effects.json` byte-for-byte unchanged. Record exact deviations as blockers instead of silently simplifying the study.
 
 In R0-only mode, update `AUTODESIGN_STATE.md` to `R0_PASSED` or `R0_FAILED_RETURN_TO_DESIGN` after writing `r0_record.json`; the next worker is `design`. In full mode, update to `IMPLEMENTATION_READY` after materialization, `EXECUTION_IN_PROGRESS` while stages remain, then `EXECUTION_COMPLETE` once all five stages pass and the effect comparison exists; the next worker is `diagnosis`.
+
+## 下载与计算预算计时
+
+- 模型、数据及依赖的网络下载单独记录 NETWORK_TRANSFER 耗时、字节数、续传偏移及结果，不计入 CPU/GPU 实验计算预算；下载等待也不作为 R0 科学失败或返回设计的原因。
+- 保留部分文件，使用服务端支持的断点续传；网络超时保留现有进度，恢复前核对已有进程。单次连接/读取超时仍适用；不因网络慢削减样本、候选或比较预算。
+- CPU 检查、数据处理、模型推理等实际计算仍遵守原注册预算；混合计算与传输命令分别记录，不能直接把整个命令的墙钟时长作为 CPU 计算量。旧执行记录不改写，恢复时按类别重算计算预算，剔除明确的下载等待。
+
+## 数据隔离检查的适用范围
+
+隔离规则必须针对当前任务可达的具体泄漏途径，使用实际可取得的来源、样本/文档ID、图像及标注信息。配置选择与正式评测的样本和图像应独立；不同图像共享常见文字不自动构成泄漏。除非科学输入明确要求文本去污染或已有证据表明同文档复用，不得将完整页面转写、通用文本shingle相似度或无法取得的上游字段设为必过门槛。缺少与实际估计目标无关的字段，记录为核验局限，不伪装成实验失败。真实样本重叠、标签流入配置选择或正式范围改变仍须阻止执行。已有不适用门槛由design在新一轮修订并冻结，保留旧失败证据；run不得将失败改写为通过。不新增无实际用途的哈希、评分器或防御性检查。每项检查说明具体检测的失败及失败后改变的动作。
